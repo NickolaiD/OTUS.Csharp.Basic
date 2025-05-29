@@ -2,9 +2,10 @@
 {
     internal class Program
     {
+        static string userName = "";
         static void Main(string[] args)
         {
-            string userCommand, userName = "";
+            string userCommand;
             bool doContinue, firstRun = true;
 
             do
@@ -21,12 +22,12 @@
                     userCommand = Console.ReadLine() ?? "";
                 }
 
-                doContinue = ExecuteCommand(userCommand, ref userName);
+                doContinue = ExecuteCommand(userCommand);
             }
             while (doContinue);
         }
 
-        private static bool ExecuteCommand(string userCommand, ref string userName)
+        private static bool ExecuteCommand(string userCommand)
         {
             if (userCommand == string.Empty)
                 return true;
@@ -54,7 +55,7 @@
 
                 case "/help":
                     Console.WriteLine(@$"
-{GetFullRequest("Справочная информация:", userName)}
+{GetFullOutput("Справочная информация:", userName)}
 /start - начало работы
 /help - справочная информация
 /info - информация о версии программы и дате её создания
@@ -64,23 +65,23 @@
                     break;
 
                 case "/info":
-                    Console.WriteLine($"{GetFullRequest("Версия бота: 1.0, дата создания 20.05.2025", userName)}");
+                    Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", userName));
                     break;
 
                 case "/echo":
                     if (userName == string.Empty)
-                        Console.WriteLine($"{GetFullRequest("Для использования команды /echo сначала выполните /start и введите имя", userName)}");
+                        Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", userName)}");
                     else
-                        Console.WriteLine(parameter);
+                        Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", userName)}");
                     break;
 
                 case "/exit":
-                    Console.WriteLine($"{GetFullRequest("Завершение работы.", userName)}");
+                    Console.WriteLine($"{GetFullOutput("Завершение работы.", userName)}");
                     Console.Read();
                     return false;
 
                 default:
-                    Console.WriteLine($"{GetFullRequest($"Команда {command} не существует", userName)}");
+                    Console.WriteLine($"{GetFullOutput($"Команда {command} не существует", userName)}");
                     break;
             }
 
@@ -89,7 +90,7 @@
             return true;
         }
 
-        private static string GetFullRequest(string request, string userName)
+        private static string GetFullOutput(string request, string userName)
         {
             if (userName == string.Empty)
                 return request;
