@@ -3,7 +3,7 @@
     internal class Program
     {
         static string userName = "";
-        static void Main(string[] args)
+        static void Main()
         {
             string userCommand;
             bool doContinue, firstRun = true;
@@ -32,7 +32,7 @@
             if (userCommand == string.Empty)
                 return true;
 
-            int spacePosition = userCommand.IndexOf(" ");
+            int spacePosition = userCommand.IndexOf(' ');
             string command, parameter;
 
             if (spacePosition == -1)
