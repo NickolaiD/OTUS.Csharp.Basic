@@ -96,10 +96,10 @@
                     Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", userName)}");
                     var taskNo = Console.ReadLine() ?? "";
                     if (int.TryParse(taskNo, out int taskNoInt)) {
-                        if ((taskNoInt > 0)  && (taskNoInt <= taskList.Count))
+                        if ((taskNoInt > 0) && (taskNoInt <= taskList.Count))
                             taskList.RemoveAt(taskNoInt - 1);
                         else
-                            Console.WriteLine($"Элемент с номером {taskNoInt}  не существует");
+                            Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
 
                     }
                     else
