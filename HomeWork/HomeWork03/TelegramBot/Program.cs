@@ -78,6 +78,7 @@
                     else
                         Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", userName)}");
                     break;
+                
                 case "/addtask":
                     Console.WriteLine($"{GetFullOutput("Введите название задачи:", userName)}");
                     var taskName = Console.ReadLine() ?? "";
@@ -85,11 +86,24 @@
                         taskList.Add(taskName);
                     Console.WriteLine("Задача добавлена");
                     break;
+                
                 case "/showtasks":
-                    foreach (var task in taskList)
-                        Console.WriteLine(task.ToString());
+                    ShowTasks();
                     break;
+                
                 case "/removetask":
+                    ShowTasks();
+                    Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", userName)}");
+                    var taskNo = Console.ReadLine() ?? "";
+                    if (int.TryParse(taskNo, out int taskNoInt)) {
+                        if ((taskNoInt > 0)  && (taskNoInt <= taskList.Count))
+                            taskList.RemoveAt(taskNoInt - 1);
+                        else
+                            Console.WriteLine($"Элемент с номером {taskNoInt}  не существует");
+
+                    }
+                    else
+                        Console.WriteLine("Введен некорректный номер задачи");
                     break;
 
                 case "/exit":
@@ -102,7 +116,7 @@
                     break;
             }
 
-            //Console.WriteLine("----------------------\n");
+            Console.WriteLine();
 
             return true;
         }
@@ -113,6 +127,21 @@
                 return request;
             else
                 return $"{userName}, {request.ToLower()}";
+        }
+
+        private static void ShowTasks()
+        {
+            if (taskList.Count > 0)
+            {
+                int counter = 1;
+                foreach (var task in taskList)
+                {
+                    Console.WriteLine($"{counter} - {task.ToString()}");
+                    counter++;
+                }
+            }
+            else
+                Console.WriteLine($"{GetFullOutput("Список задач пуст", userName)}");
         }
     }
 }
