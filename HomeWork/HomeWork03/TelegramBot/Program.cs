@@ -21,7 +21,7 @@ namespace TelegramBot
                 else
                 {
                     Console.WriteLine();
-                    Console.Write($"Введите команду: ");
+                    Console.Write("Введите команду: ");
                     userCommand = Console.ReadLine() ?? "";
                 }
 
