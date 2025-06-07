@@ -4,8 +4,8 @@ namespace TelegramBot
 {
     internal class Program
     {
-        static string userName = "";
-        static List<string> taskList = new List<string>();
+        private static string _userName = "";
+        private static List<string> _taskList = new List<string>();
         static void Main()
         {
             string userCommand = "";
@@ -53,16 +53,16 @@ namespace TelegramBot
             {
                 case "/start":
                     Console.Write("Введите свое имя: ");
-                    userName = Console.ReadLine() ?? "";
+                    _userName = Console.ReadLine() ?? "";
                     
-                    if (userName != String.Empty)
-                        Console.WriteLine($"Привет, {userName}! Чем могу помочь?");
+                    if (_userName != String.Empty)
+                        Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
                     
                     break;
 
                 case "/help":
                     Console.WriteLine(@$"
-{GetFullOutput("Справочная информация:", userName)}
+{GetFullOutput("Справочная информация:", _userName)}
 /start - начало работы
 /help - справочная информация
 /info - информация о версии программы и дате её создания
@@ -75,21 +75,21 @@ namespace TelegramBot
                     break;
 
                 case "/info":
-                    Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", userName));
+                    Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _userName));
                     break;
 
                 case "/echo":
-                    if (userName == string.Empty)
-                        Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", userName)}");
+                    if (_userName == string.Empty)
+                        Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _userName)}");
                     else
-                        Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", userName)}");
+                        Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", _userName)}");
                     break;
                 
                 case "/addtask":
-                    Console.WriteLine($"{GetFullOutput("Введите название задачи:", userName)}");
+                    Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
                     var taskName = Console.ReadLine() ?? "";
                     if (taskName != String.Empty)
-                        taskList.Add(taskName);
+                        _taskList.Add(taskName);
                     Console.WriteLine("Задача добавлена");
                     break;
                 
@@ -100,15 +100,15 @@ namespace TelegramBot
                 case "/removetask":
                     ShowTasks();
 
-                    if (taskList.Count == 0)
+                    if (_taskList.Count == 0)
                         return true;
 
-                    Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", userName)}");
+                    Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
                     var taskNo = Console.ReadLine() ?? "";
                     if (int.TryParse(taskNo, out int taskNoInt)) {
-                        if ((taskNoInt > 0) && (taskNoInt <= taskList.Count))
+                        if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
                         {
-                            taskList.RemoveAt(taskNoInt - 1);
+                            _taskList.RemoveAt(taskNoInt - 1);
                             Console.WriteLine($"Задача с номером {taskNoInt} удалена");
                         }
                         else
@@ -120,12 +120,12 @@ namespace TelegramBot
                     break;
 
                 case "/exit":
-                    Console.WriteLine($"{GetFullOutput("Завершение работы.", userName)}");
+                    Console.WriteLine($"{GetFullOutput("Завершение работы.", _userName)}");
                     Console.Read();
                     return false;
 
                 default:
-                    Console.WriteLine($"{GetFullOutput($"Команда {command} не существует", userName)}");
+                    Console.WriteLine($"{GetFullOutput($"Команда {command} не существует", _userName)}");
                     break;
             }
 
@@ -142,17 +142,17 @@ namespace TelegramBot
 
         private static void ShowTasks()
         {
-            if (taskList.Count > 0)
+            if (_taskList.Count > 0)
             {
                 int counter = 1;
-                foreach (var task in taskList)
+                foreach (var task in _taskList)
                 {
                     Console.WriteLine($"{counter} - {task}");
                     counter++;
                 }
             }
             else
-                Console.WriteLine($"{GetFullOutput("Список задач пуст", userName)}");
+                Console.WriteLine($"{GetFullOutput("Список задач пуст", _userName)}");
         }
     }
 }
