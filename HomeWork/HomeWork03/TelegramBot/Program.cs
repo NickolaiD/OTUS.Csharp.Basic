@@ -1,4 +1,6 @@
-﻿namespace TelegramBot
+﻿using System.Diagnostics;
+
+namespace TelegramBot
 {
     internal class Program
     {
@@ -18,6 +20,7 @@
                 }
                 else
                 {
+                    Console.WriteLine();
                     Console.Write($"Введите команду: ");
                     userCommand = Console.ReadLine() ?? "";
                 }
@@ -64,6 +67,9 @@
 /help - справочная информация
 /info - информация о версии программы и дате её создания
 /echo - программа возвращает введенный текст (например, /echo Hello)
+/addtask - добавить задачу в список
+/showtasks - показать список задач
+/removetask - удалить задачу из списка
 /exit - завершение работы"
                     );
                     break;
@@ -93,11 +99,18 @@
                 
                 case "/removetask":
                     ShowTasks();
+
+                    if (taskList.Count == 0)
+                        return true;
+
                     Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", userName)}");
                     var taskNo = Console.ReadLine() ?? "";
                     if (int.TryParse(taskNo, out int taskNoInt)) {
                         if ((taskNoInt > 0) && (taskNoInt <= taskList.Count))
+                        {
                             taskList.RemoveAt(taskNoInt - 1);
+                            Console.WriteLine($"Задача с номером {taskNoInt} удалена");
+                        }
                         else
                             Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
 
@@ -115,8 +128,6 @@
                     Console.WriteLine($"{GetFullOutput($"Команда {command} не существует", userName)}");
                     break;
             }
-
-            Console.WriteLine();
 
             return true;
         }
@@ -136,7 +147,7 @@
                 int counter = 1;
                 foreach (var task in taskList)
                 {
-                    Console.WriteLine($"{counter} - {task.ToString()}");
+                    Console.WriteLine($"{counter} - {task}");
                     counter++;
                 }
             }
