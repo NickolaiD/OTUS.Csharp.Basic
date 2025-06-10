@@ -6,26 +6,52 @@ namespace TelegramBot
     {
         private static string _userName = "";
         private static List<string> _taskList = new List<string>();
+        private static int _taskCountLimit = 0;
         static void Main()
         {
             string userCommand = "";
-            bool doContinue, firstRun = true;
-
+            bool doContinue = true, firstRun = true;
+            
             do
             {
-                if (firstRun)
+                try
                 {
-                    Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
-                    firstRun = false;
+                    if (firstRun)
+                    {
+                        Console.WriteLine("Введите максимально допустимое количество задач");
+
+                        if ((!int.TryParse(Console.ReadLine(), out _taskCountLimit)) || (_taskCountLimit <= 0) || (_taskCountLimit > 100))
+                        {
+                            throw new ArgumentException();
+                        }
+
+                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
+                        firstRun = false;
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.Write("Введите команду: ");
+                        userCommand = Console.ReadLine() ?? "";
+                    }
+
+                    doContinue = ExecuteCommand(userCommand);
                 }
-                else
+                
+                catch (ArgumentException ex)
                 {
-                    Console.WriteLine();
-                    Console.Write("Введите команду: ");
-                    userCommand = Console.ReadLine() ?? "";
+                    Console.WriteLine(ex.Message);
                 }
 
-                doContinue = ExecuteCommand(userCommand);
+                catch (TaskCountLimitException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
+                }
             }
             while (doContinue);
         }
@@ -86,6 +112,10 @@ namespace TelegramBot
                     break;
                 
                 case "/addtask":
+
+                    if (_taskList.Count >= _taskCountLimit)
+                        throw new TaskCountLimitException(_taskCountLimit);
+
                     Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
                     var taskName = Console.ReadLine() ?? "";
                     if (taskName != String.Empty)
