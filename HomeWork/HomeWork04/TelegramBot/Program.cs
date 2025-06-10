@@ -33,6 +33,7 @@ namespace TelegramBot
                         Console.WriteLine();
                         Console.Write("Введите команду: ");
                         userCommand = Console.ReadLine() ?? "";
+                        ValidateString(userCommand);
                     }
 
                     doContinue = ExecuteCommand(userCommand);
@@ -90,10 +91,8 @@ namespace TelegramBot
                 case "/start":
                     Console.Write("Введите свое имя: ");
                     _userName = Console.ReadLine() ?? "";
-                    
-                    if (_userName != String.Empty)
-                        Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
-                    
+                    ValidateString(_userName);
+                    Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
                     break;
 
                 case "/help":
@@ -128,19 +127,18 @@ namespace TelegramBot
 
                     Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
                     var taskName = Console.ReadLine() ?? "";
-                    if (taskName != String.Empty)
-                    {
-                        if (taskName.Length > _taskLengthLimit)
-                            throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
+                    ValidateString(taskName);
+                    
+                    if (taskName.Length > _taskLengthLimit)
+                        throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
 
-                        foreach (var task in _taskList)
-                        {
-                            if (task == taskName)
-                                throw new DuplicateTaskException(taskName);
-                        }
-                        
-                        _taskList.Add(taskName);
+                    foreach (var task in _taskList)
+                    {
+                        if (task == taskName)
+                            throw new DuplicateTaskException(taskName);
                     }
+                        
+                    _taskList.Add(taskName);
                     Console.WriteLine("Задача добавлена");
                     break;
                 
@@ -156,6 +154,8 @@ namespace TelegramBot
 
                     Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
                     var taskNo = Console.ReadLine() ?? "";
+                    ValidateString(taskNo);
+
                     if (int.TryParse(taskNo, out int taskNoInt)) {
                         if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
                         {
@@ -211,7 +211,6 @@ namespace TelegramBot
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ForegroundColor = ConsoleColor.White;
-
         }
 
         private static int ParseAndValidateInt(string? str, int min, int max)
@@ -221,6 +220,22 @@ namespace TelegramBot
                 throw new ArgumentException();
             }
             return result;
+        }
+
+        private static void ValidateString(string? str)
+        {
+            if (!String.IsNullOrEmpty(str))
+            {
+                foreach (var item in str)
+                {
+                    if (!char.IsWhiteSpace(item))
+                    { 
+                        return; 
+                    }
+                }
+            }
+            
+            throw new ArgumentException();
         }
     }
 }
