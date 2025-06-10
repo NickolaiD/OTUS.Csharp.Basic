@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace TelegramBot
 {
@@ -89,90 +90,35 @@ namespace TelegramBot
             switch (command)
             {
                 case "/start":
-                    Console.Write("Введите свое имя: ");
-                    _userName = Console.ReadLine() ?? "";
-                    ValidateString(_userName);
-                    Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
+                    CommandStart();
                     break;
 
                 case "/help":
-                    Console.WriteLine(@$"
-{GetFullOutput("Справочная информация:", _userName)}
-/start - начало работы
-/help - справочная информация
-/info - информация о версии программы и дате её создания
-/echo - программа возвращает введенный текст (например, /echo Hello)
-/addtask - добавить задачу в список
-/showtasks - показать список задач
-/removetask - удалить задачу из списка
-/exit - завершение работы"
-                    );
+                    CommandHelp();
                     break;
 
                 case "/info":
-                    Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _userName));
+                    CommandInfo();
                     break;
 
                 case "/echo":
-                    if (_userName == string.Empty)
-                        Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _userName)}");
-                    else
-                        Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", _userName)}");
+                    CommandEcho(parameter);
                     break;
                 
                 case "/addtask":
-
-                    if (_taskList.Count >= _taskCountLimit)
-                        throw new TaskCountLimitException(_taskCountLimit);
-
-                    Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
-                    var taskName = Console.ReadLine() ?? "";
-                    ValidateString(taskName);
-                    
-                    if (taskName.Length > _taskLengthLimit)
-                        throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
-
-                    foreach (var task in _taskList)
-                    {
-                        if (task == taskName)
-                            throw new DuplicateTaskException(taskName);
-                    }
-                        
-                    _taskList.Add(taskName);
-                    Console.WriteLine("Задача добавлена");
+                    CommandAddTask();                   
                     break;
                 
                 case "/showtasks":
-                    ShowTasks();
+                    CommandShowTasks();
                     break;
                 
                 case "/removetask":
-                    ShowTasks();
-
-                    if (_taskList.Count == 0)
-                        return true;
-
-                    Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
-                    var taskNo = Console.ReadLine() ?? "";
-                    ValidateString(taskNo);
-
-                    if (int.TryParse(taskNo, out int taskNoInt)) {
-                        if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
-                        {
-                            _taskList.RemoveAt(taskNoInt - 1);
-                            Console.WriteLine($"Задача с номером {taskNoInt} удалена");
-                        }
-                        else
-                            Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
-
-                    }
-                    else
-                        Console.WriteLine("Введен некорректный номер задачи");
+                    CommandRemoveTask();
                     break;
 
                 case "/exit":
-                    Console.WriteLine($"{GetFullOutput("Завершение работы.", _userName)}");
-                    Console.Read();
+                    CommandExit();
                     return false;
 
                 default:
@@ -190,22 +136,7 @@ namespace TelegramBot
             else
                 return $"{userName}, {request.ToLower()}";
         }
-
-        private static void ShowTasks()
-        {
-            if (_taskList.Count > 0)
-            {
-                int counter = 1;
-                foreach (var task in _taskList)
-                {
-                    Console.WriteLine($"{counter} - {task}");
-                    counter++;
-                }
-            }
-            else
-                Console.WriteLine($"{GetFullOutput("Список задач пуст", _userName)}");
-        }
-
+        
         private static void ShowError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -237,5 +168,112 @@ namespace TelegramBot
             
             throw new ArgumentException();
         }
+
+        private static void CommandStart()
+        {
+            Console.Write("Введите свое имя: ");
+            _userName = Console.ReadLine() ?? "";
+            ValidateString(_userName);
+            Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
+        }
+
+        private static void CommandHelp()
+        {
+            Console.WriteLine(@$"
+{GetFullOutput("Справочная информация:", _userName)}
+/start - начало работы
+/help - справочная информация
+/info - информация о версии программы и дате её создания
+/echo - программа возвращает введенный текст (например, /echo Hello)
+/addtask - добавить задачу в список
+/showtasks - показать список задач
+/removetask - удалить задачу из списка
+/exit - завершение работы"
+);
+        }
+
+        private static void CommandInfo()
+        {
+            Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _userName));
+        }
+
+        private static void CommandEcho(string parameter)
+        {
+            if (_userName == string.Empty)
+                Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _userName)}");
+            else
+                Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", _userName)}");
+
+        }
+
+        private static void CommandAddTask()
+        {
+            if (_taskList.Count >= _taskCountLimit)
+                throw new TaskCountLimitException(_taskCountLimit);
+
+            Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
+            var taskName = Console.ReadLine() ?? "";
+            ValidateString(taskName);
+
+            if (taskName.Length > _taskLengthLimit)
+                throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
+
+            foreach (var task in _taskList)
+            {
+                if (task == taskName)
+                    throw new DuplicateTaskException(taskName);
+            }
+
+            _taskList.Add(taskName);
+            Console.WriteLine("Задача добавлена");
+        }
+        private static void CommandShowTasks()
+        {
+            if (_taskList.Count > 0)
+            {
+                int counter = 1;
+                foreach (var task in _taskList)
+                {
+                    Console.WriteLine($"{counter} - {task}");
+                    counter++;
+                }
+            }
+            else
+                Console.WriteLine($"{GetFullOutput("Список задач пуст", _userName)}");
+        }
+        
+        private static void CommandRemoveTask()
+        {
+            CommandShowTasks();
+
+            if (_taskList.Count == 0)
+                return;
+
+            Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
+            var taskNo = Console.ReadLine() ?? "";
+            ValidateString(taskNo);
+
+            if (int.TryParse(taskNo, out int taskNoInt))
+            {
+                if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
+                {
+                    _taskList.RemoveAt(taskNoInt - 1);
+                    Console.WriteLine($"Задача с номером {taskNoInt} удалена");
+                }
+                else
+                    Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
+
+            }
+            else
+                Console.WriteLine("Введен некорректный номер задачи");
+
+        }
+
+        private static void CommandExit()
+        {
+            Console.WriteLine($"{GetFullOutput("Завершение работы.", _userName)}");
+            Console.Read();
+        }
+
     }
 }
