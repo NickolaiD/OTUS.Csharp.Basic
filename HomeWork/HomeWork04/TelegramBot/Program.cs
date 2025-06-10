@@ -48,22 +48,27 @@ namespace TelegramBot
                 
                 catch (ArgumentException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    ShowError(ex.Message);
                 }
 
                 catch (TaskCountLimitException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    ShowError(ex.Message);
                 }
 
                 catch (TaskLengthLimitException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    ShowError(ex.Message);
+                }
+
+                catch (DuplicateTaskException ex)
+                {
+                    ShowError(ex.Message);
                 }
 
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
+                    ShowError($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
                 }
             }
             while (doContinue);
@@ -136,6 +141,12 @@ namespace TelegramBot
                         if (taskName.Length > _taskLengthLimit)
                             throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
 
+                        foreach (var task in _taskList)
+                        {
+                            if (task == taskName)
+                                throw new DuplicateTaskException(taskName);
+                        }
+                        
                         _taskList.Add(taskName);
                     }
                     Console.WriteLine("Задача добавлена");
@@ -201,6 +212,14 @@ namespace TelegramBot
             }
             else
                 Console.WriteLine($"{GetFullOutput("Список задач пуст", _userName)}");
+        }
+
+        private static void ShowError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.White;
+
         }
     }
 }
