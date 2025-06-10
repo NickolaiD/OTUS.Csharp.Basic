@@ -7,6 +7,7 @@ namespace TelegramBot
         private static string _userName = "";
         private static List<string> _taskList = new List<string>();
         private static int _taskCountLimit = 0;
+        private static int _taskLengthLimit = 0;
         static void Main()
         {
             string userCommand = "";
@@ -21,6 +22,13 @@ namespace TelegramBot
                         Console.WriteLine("Введите максимально допустимое количество задач");
 
                         if ((!int.TryParse(Console.ReadLine(), out _taskCountLimit)) || (_taskCountLimit <= 0) || (_taskCountLimit > 100))
+                        {
+                            throw new ArgumentException();
+                        }
+
+                        Console.WriteLine("Введите максимально допустимую длину задачи");
+
+                        if ((!int.TryParse(Console.ReadLine(), out _taskLengthLimit)) || (_taskLengthLimit <= 0) || (_taskLengthLimit > 100))
                         {
                             throw new ArgumentException();
                         }
@@ -47,7 +55,12 @@ namespace TelegramBot
                 {
                     Console.WriteLine(ex.Message);
                 }
-                
+
+                catch (TaskLengthLimitException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
@@ -119,7 +132,12 @@ namespace TelegramBot
                     Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
                     var taskName = Console.ReadLine() ?? "";
                     if (taskName != String.Empty)
+                    {
+                        if (taskName.Length > _taskLengthLimit)
+                            throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
+
                         _taskList.Add(taskName);
+                    }
                     Console.WriteLine("Задача добавлена");
                     break;
                 
