@@ -20,18 +20,10 @@ namespace TelegramBot
                     if (firstRun)
                     {
                         Console.WriteLine("Введите максимально допустимое количество задач");
-
-                        if ((!int.TryParse(Console.ReadLine(), out _taskCountLimit)) || (_taskCountLimit <= 0) || (_taskCountLimit > 100))
-                        {
-                            throw new ArgumentException();
-                        }
+                        _taskCountLimit = ParseAndValidateInt(Console.ReadLine(), 0, 100);
 
                         Console.WriteLine("Введите максимально допустимую длину задачи");
-
-                        if ((!int.TryParse(Console.ReadLine(), out _taskLengthLimit)) || (_taskLengthLimit <= 0) || (_taskLengthLimit > 100))
-                        {
-                            throw new ArgumentException();
-                        }
+                        _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 0, 100);
 
                         Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
                         firstRun = false;
@@ -220,6 +212,15 @@ namespace TelegramBot
             Console.WriteLine(message);
             Console.ForegroundColor = ConsoleColor.White;
 
+        }
+
+        private static int ParseAndValidateInt(string? str, int min, int max)
+        {
+            if ((!int.TryParse(str, out int result)) || (result <= min) || (result > 100))
+            {
+                throw new ArgumentException();
+            }
+            return result;
         }
     }
 }
