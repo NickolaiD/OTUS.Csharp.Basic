@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace TelegramBot
 {
@@ -6,26 +7,63 @@ namespace TelegramBot
     {
         private static string _userName = "";
         private static List<string> _taskList = new List<string>();
+        private static int _taskCountLimit = 0;
+        private static int _taskLengthLimit = 0;
         static void Main()
         {
             string userCommand = "";
-            bool doContinue, firstRun = true;
-
+            bool doContinue = true, firstRun = true;
+            
             do
             {
-                if (firstRun)
+                try
                 {
-                    Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
-                    firstRun = false;
+                    if (firstRun)
+                    {
+                        Console.WriteLine("Введите максимально допустимое количество задач");
+                        _taskCountLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
+
+                        Console.WriteLine("Введите максимально допустимую длину задачи");
+                        _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
+
+                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
+                        firstRun = false;
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.Write("Введите команду: ");
+                        userCommand = Console.ReadLine() ?? "";
+                        ValidateString(userCommand);
+                    }
+
+                    doContinue = ExecuteCommand(userCommand);
                 }
-                else
+                
+                catch (ArgumentException ex)
                 {
-                    Console.WriteLine();
-                    Console.Write("Введите команду: ");
-                    userCommand = Console.ReadLine() ?? "";
+                    ShowError(ex.Message);
                 }
 
-                doContinue = ExecuteCommand(userCommand);
+                catch (TaskCountLimitException ex)
+                {
+                    ShowError(ex.Message);
+                }
+
+                catch (TaskLengthLimitException ex)
+                {
+                    ShowError(ex.Message);
+                }
+
+                catch (DuplicateTaskException ex)
+                {
+                    ShowError(ex.Message);
+                }
+
+                catch (Exception ex)
+                {
+                    ShowError($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
+                }
             }
             while (doContinue);
         }
@@ -52,76 +90,35 @@ namespace TelegramBot
             switch (command)
             {
                 case "/start":
-                    Console.Write("Введите свое имя: ");
-                    _userName = Console.ReadLine() ?? "";
-                    
-                    if (_userName != String.Empty)
-                        Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
-                    
+                    CommandStart();
                     break;
 
                 case "/help":
-                    Console.WriteLine(@$"
-{GetFullOutput("Справочная информация:", _userName)}
-/start - начало работы
-/help - справочная информация
-/info - информация о версии программы и дате её создания
-/echo - программа возвращает введенный текст (например, /echo Hello)
-/addtask - добавить задачу в список
-/showtasks - показать список задач
-/removetask - удалить задачу из списка
-/exit - завершение работы"
-                    );
+                    CommandHelp();
                     break;
 
                 case "/info":
-                    Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _userName));
+                    CommandInfo();
                     break;
 
                 case "/echo":
-                    if (_userName == string.Empty)
-                        Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _userName)}");
-                    else
-                        Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", _userName)}");
+                    CommandEcho(parameter);
                     break;
                 
                 case "/addtask":
-                    Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
-                    var taskName = Console.ReadLine() ?? "";
-                    if (taskName != String.Empty)
-                        _taskList.Add(taskName);
-                    Console.WriteLine("Задача добавлена");
+                    CommandAddTask();                   
                     break;
                 
                 case "/showtasks":
-                    ShowTasks();
+                    CommandShowTasks();
                     break;
                 
                 case "/removetask":
-                    ShowTasks();
-
-                    if (_taskList.Count == 0)
-                        return true;
-
-                    Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
-                    var taskNo = Console.ReadLine() ?? "";
-                    if (int.TryParse(taskNo, out int taskNoInt)) {
-                        if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
-                        {
-                            _taskList.RemoveAt(taskNoInt - 1);
-                            Console.WriteLine($"Задача с номером {taskNoInt} удалена");
-                        }
-                        else
-                            Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
-
-                    }
-                    else
-                        Console.WriteLine("Введен некорректный номер задачи");
+                    CommandRemoveTask();
                     break;
 
                 case "/exit":
-                    Console.WriteLine($"{GetFullOutput("Завершение работы.", _userName)}");
-                    Console.Read();
+                    CommandExit();
                     return false;
 
                 default:
@@ -139,8 +136,98 @@ namespace TelegramBot
             else
                 return $"{userName}, {request.ToLower()}";
         }
+        
+        private static void ShowError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
 
-        private static void ShowTasks()
+        private static int ParseAndValidateInt(string? str, int min, int max)
+        {
+            if ((!int.TryParse(str, out int result)) || (result < min) || (result > max))
+            {
+                throw new ArgumentException();
+            }
+            return result;
+        }
+
+        private static void ValidateString(string? str)
+        {
+            if (!String.IsNullOrEmpty(str))
+            {
+                foreach (var item in str)
+                {
+                    if (!char.IsWhiteSpace(item))
+                    { 
+                        return; 
+                    }
+                }
+            }
+            
+            throw new ArgumentException();
+        }
+
+        private static void CommandStart()
+        {
+            Console.Write("Введите свое имя: ");
+            _userName = Console.ReadLine() ?? "";
+            ValidateString(_userName);
+            Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
+        }
+
+        private static void CommandHelp()
+        {
+            Console.WriteLine(@$"
+{GetFullOutput("Справочная информация:", _userName)}
+/start - начало работы
+/help - справочная информация
+/info - информация о версии программы и дате её создания
+/echo - программа возвращает введенный текст (например, /echo Hello)
+/addtask - добавить задачу в список
+/showtasks - показать список задач
+/removetask - удалить задачу из списка
+/exit - завершение работы"
+);
+        }
+
+        private static void CommandInfo()
+        {
+            Console.WriteLine(GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _userName));
+        }
+
+        private static void CommandEcho(string parameter)
+        {
+            if (_userName == string.Empty)
+                Console.WriteLine($"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _userName)}");
+            else
+                Console.WriteLine($"{GetFullOutput($"Введенный текст: {parameter}", _userName)}");
+
+        }
+
+        private static void CommandAddTask()
+        {
+            if (_taskList.Count >= _taskCountLimit)
+                throw new TaskCountLimitException(_taskCountLimit);
+
+            Console.WriteLine($"{GetFullOutput("Введите название задачи:", _userName)}");
+            var taskName = Console.ReadLine() ?? "";
+            ValidateString(taskName);
+
+            if (taskName.Length > _taskLengthLimit)
+                throw new TaskLengthLimitException(taskName.Length, _taskLengthLimit);
+
+            foreach (var task in _taskList)
+            {
+                if (task == taskName)
+                    throw new DuplicateTaskException(taskName);
+            }
+
+            _taskList.Add(taskName);
+            Console.WriteLine("Задача добавлена");
+        }
+        private static void CommandShowTasks()
         {
             if (_taskList.Count > 0)
             {
@@ -154,5 +241,27 @@ namespace TelegramBot
             else
                 Console.WriteLine($"{GetFullOutput("Список задач пуст", _userName)}");
         }
+        
+        private static void CommandRemoveTask()
+        {
+            CommandShowTasks();
+
+            if (_taskList.Count == 0)
+                return;
+
+            Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
+            var taskNo = Console.ReadLine() ?? "";
+            var taskNoInt = ParseAndValidateInt(taskNo, 1, _taskList.Count);
+
+             _taskList.RemoveAt(taskNoInt - 1);
+                 Console.WriteLine($"Задача с номером {taskNoInt} удалена");
+        }
+
+        private static void CommandExit()
+        {
+            Console.WriteLine($"{GetFullOutput("Завершение работы.", _userName)}");
+            Console.Read();
+        }
+
     }
 }
