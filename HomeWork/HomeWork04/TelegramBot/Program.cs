@@ -21,10 +21,10 @@ namespace TelegramBot
                     if (firstRun)
                     {
                         Console.WriteLine("Введите максимально допустимое количество задач");
-                        _taskCountLimit = ParseAndValidateInt(Console.ReadLine(), 0, 100);
+                        _taskCountLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
                         Console.WriteLine("Введите максимально допустимую длину задачи");
-                        _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 0, 100);
+                        _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
                         Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
                         firstRun = false;
@@ -146,7 +146,7 @@ namespace TelegramBot
 
         private static int ParseAndValidateInt(string? str, int min, int max)
         {
-            if ((!int.TryParse(str, out int result)) || (result <= min) || (result > 100))
+            if ((!int.TryParse(str, out int result)) || (result < min) || (result > max))
             {
                 throw new ArgumentException();
             }
@@ -251,22 +251,10 @@ namespace TelegramBot
 
             Console.WriteLine($"{GetFullOutput("Введите номер задачи для удаления:", _userName)}");
             var taskNo = Console.ReadLine() ?? "";
-            ValidateString(taskNo);
+            var taskNoInt = ParseAndValidateInt(taskNo, 1, _taskList.Count);
 
-            if (int.TryParse(taskNo, out int taskNoInt))
-            {
-                if ((taskNoInt > 0) && (taskNoInt <= _taskList.Count))
-                {
-                    _taskList.RemoveAt(taskNoInt - 1);
-                    Console.WriteLine($"Задача с номером {taskNoInt} удалена");
-                }
-                else
-                    Console.WriteLine($"Элемент с номером {taskNoInt} не существует");
-
-            }
-            else
-                Console.WriteLine("Введен некорректный номер задачи");
-
+             _taskList.RemoveAt(taskNoInt - 1);
+                 Console.WriteLine($"Задача с номером {taskNoInt} удалена");
         }
 
         private static void CommandExit()
