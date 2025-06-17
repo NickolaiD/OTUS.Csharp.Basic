@@ -1,8 +1,9 @@
 ﻿using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace StackExample
 {
-    class Stack
+    public class Stack
     {
         private List<string> _stackList;
         public int Size { get => _stackList.Count; }
@@ -43,5 +44,6 @@ namespace StackExample
             _stackList.RemoveAt(_stackList.Count - 1);
             return result;
         }
+
     }
 }

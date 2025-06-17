@@ -25,7 +25,13 @@
                 s.Pop();
                 // size = 0, Top = null
                 Console.WriteLine($"size = {s.Size}, Top = {(s.Top == null ? "null" : s.Top)}");
-                s.Pop();
+                //s.Pop();
+
+                //***************
+
+                var s1 = new Stack("a", "b", "c");
+                s1.Merge(new Stack("1", "2", "3"));
+
             }
             catch (Exception ex)
             {
