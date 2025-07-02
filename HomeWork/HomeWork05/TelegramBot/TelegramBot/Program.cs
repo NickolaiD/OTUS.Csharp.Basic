@@ -9,10 +9,12 @@ namespace TelegramBot
         private static List<string> _taskList = new List<string>();
         private static int _taskCountLimit = 0;
         private static int _taskLengthLimit = 0;
+        private static ToDoUser? _toDoUser;
         static void Main()
         {
             string userCommand = "";
             bool doContinue = true, firstRun = true;
+
             
             do
             {
@@ -174,6 +176,7 @@ namespace TelegramBot
             Console.Write("Введите свое имя: ");
             _userName = Console.ReadLine() ?? "";
             ValidateString(_userName);
+            _toDoUser = new ToDoUser(_userName);
             Console.WriteLine($"Привет, {_userName}! Чем могу помочь?");
         }
 
