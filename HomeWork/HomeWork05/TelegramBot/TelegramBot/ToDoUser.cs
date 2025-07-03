@@ -8,15 +8,15 @@ namespace TelegramBot
 {
     internal class ToDoUser
     {
-        private Guid _userId;
-        private string _telegramUserName;
-        private DateTime _registeredAt;
+        public Guid UserId { get; }
+        public string TelegramUserName { get;}
+        public DateTime RegisteredAt { get; }
 
         public ToDoUser(string telegramUserName)
         {
-            _userId = Guid.NewGuid();
-            _registeredAt = DateTime.UtcNow;
-            _telegramUserName = telegramUserName;
+            UserId = Guid.NewGuid();
+            RegisteredAt = DateTime.UtcNow;
+            TelegramUserName = telegramUserName;
 
         }
 
