@@ -110,7 +110,11 @@ namespace TelegramBot
                 case "/addtask":
                     CommandAddTask();                   
                     break;
-                
+
+                case "/completetask":
+                    CommandCompleteTask(parameter);
+                    break;
+
                 case "/showtasks":
                     CommandShowTasks();
                     break;
@@ -229,6 +233,29 @@ namespace TelegramBot
 
             _toDoItemList.Add(new ToDoItem(_toDoUser, toDoItemName));
             Console.WriteLine("Задача добавлена");
+        }
+
+        private static void CommandCompleteTask(string parameter)
+        {
+            if (_toDoItemList.Count > 0)
+            {
+                foreach (var toDoItem in _toDoItemList)
+                {
+                    if ((toDoItem.State == ToDoItemState.Active) && (toDoItem.Id.ToString() == parameter))
+                    {
+                        toDoItem.State = ToDoItemState.Completed;
+                        toDoItem.StateChangedAt = DateTime.Now;
+                        
+                        Console.WriteLine($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}");
+                        return;
+                        
+                    }
+                }
+                Console.WriteLine($"Задача с Id {parameter} не найдена");
+            }
+            else
+                Console.WriteLine($"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
+
         }
         private static void CommandShowTasks()
         {

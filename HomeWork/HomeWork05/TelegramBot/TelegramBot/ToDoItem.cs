@@ -13,8 +13,8 @@ namespace TelegramBot
         public ToDoUser User { get; }
         public string Name { get; }
         public DateTime CreatedAt { get; }
-        public ToDoItemState State { get; }
-        public DateTime? StateChangedAt { get; }
+        public ToDoItemState State { get; set; }
+        public DateTime? StateChangedAt { get; set; }
 
         public ToDoItem(ToDoUser user, string name)
         {
