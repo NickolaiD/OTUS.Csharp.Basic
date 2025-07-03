@@ -28,7 +28,7 @@ namespace TelegramBot
                         Console.WriteLine("Введите максимально допустимую длину задачи");
                         _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
-                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /removetask, /exit");
+                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /shoalltasks, /completetask /removetask, /exit");
                         firstRun = false;
                     }
                     else
@@ -118,7 +118,11 @@ namespace TelegramBot
                 case "/showtasks":
                     CommandShowTasks();
                     break;
-                
+
+                case "/showalltasks":
+                    CommandShowAllTasks();
+                    break;
+
                 case "/removetask":
                     CommandRemoveTask();
                     break;
@@ -193,7 +197,9 @@ namespace TelegramBot
 /info - информация о версии программы и дате её создания
 /echo - программа возвращает введенный текст (например, /echo Hello)
 /addtask - добавить задачу в список
-/showtasks - показать список задач
+/showtasks - показать список активных задач
+/showalltasks - показать список всех задач
+/completetask - завершить активную задачу
 /removetask - удалить задачу из списка
 /exit - завершение работы"
 );
@@ -246,12 +252,12 @@ namespace TelegramBot
                         toDoItem.State = ToDoItemState.Completed;
                         toDoItem.StateChangedAt = DateTime.Now;
                         
-                        Console.WriteLine($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}");
+                        Console.WriteLine(GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser.TelegramUserName));
                         return;
                         
                     }
                 }
-                Console.WriteLine($"Задача с Id {parameter} не найдена");
+                Console.WriteLine(GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser.TelegramUserName));
             }
             else
                 Console.WriteLine($"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
@@ -274,7 +280,22 @@ namespace TelegramBot
             else
                 Console.WriteLine($"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
         }
-        
+
+        private static void CommandShowAllTasks()
+        {
+            if (_toDoItemList.Count > 0)
+            {
+                int counter = 1;
+                foreach (var toDoItem in _toDoItemList)
+                {
+                        Console.WriteLine($"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}");
+                        counter++;
+                }
+            }
+            else
+                Console.WriteLine($"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
+        }
+
         private static void CommandRemoveTask()
         {
             CommandShowTasks();
