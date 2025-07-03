@@ -237,8 +237,11 @@ namespace TelegramBot
                 int counter = 1;
                 foreach (var toDoItem in _toDoItemList)
                 {
-                    Console.WriteLine($"{counter} - {toDoItem.Name}");
-                    counter++;
+                    if (toDoItem.State == ToDoItemState.Active)
+                    {
+                        Console.WriteLine($"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}");
+                        counter++;
+                    }
                 }
             }
             else
