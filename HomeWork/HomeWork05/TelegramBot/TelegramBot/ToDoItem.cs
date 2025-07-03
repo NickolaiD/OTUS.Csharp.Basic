@@ -8,7 +8,6 @@ namespace TelegramBot
 {
     internal class ToDoItem
     {
-
         public Guid Id { get; }
         public ToDoUser User { get; }
         public string Name { get; }

@@ -28,7 +28,7 @@ namespace TelegramBot
                         Console.WriteLine("Введите максимально допустимую длину задачи");
                         _taskLengthLimit = ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
-                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /shoalltasks, /completetask /removetask, /exit");
+                        Console.WriteLine(@"Добро пожаловать! Доступные команды: /start, /help, /info, /echo, /addtask, /showtasks, /showalltasks, /completetask /removetask, /exit");
                         firstRun = false;
                     }
                     else
@@ -275,6 +275,10 @@ namespace TelegramBot
                         Console.WriteLine($"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}");
                         counter++;
                     }
+                }
+                if (counter == 1)
+                {
+                    Console.WriteLine($"{GetFullOutput("Активных задач нет", _toDoUser.TelegramUserName)}");
                 }
             }
             else
