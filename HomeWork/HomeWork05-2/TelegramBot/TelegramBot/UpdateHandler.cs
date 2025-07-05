@@ -108,10 +108,6 @@ namespace TelegramBot
                     CommandInfo();
                     break;
 
-                case "/echo":
-                    CommandEcho(parameter);
-                    break;
-
                 case "/addtask":
                     CommandAddTask();
                     break;
@@ -173,15 +169,6 @@ namespace TelegramBot
         private void CommandInfo()
         {
             _botClient.SendMessage(_update.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser.TelegramUserName));
-        }
-
-        private void CommandEcho(string parameter)
-        {
-            if (_toDoUser.TelegramUserName == string.Empty)
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Для использования команды /echo сначала выполните /start и введите имя", _toDoUser.TelegramUserName)}");
-            else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput($"Введенный текст: {parameter}", _toDoUser.TelegramUserName)}");
-
         }
 
         private void CommandAddTask()
