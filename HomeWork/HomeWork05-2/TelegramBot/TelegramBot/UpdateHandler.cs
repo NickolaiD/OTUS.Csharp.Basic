@@ -16,7 +16,7 @@ namespace TelegramBot
         public UpdateHandler()
         {
             _toDoItemList = new List<ToDoItem>();
-            _toDoUser = new ToDoUser("");
+            //_toDoUser = new ToDoUser("");
             _taskCountLimit = 5;
             _taskLengthLimit = 5;
         }
@@ -80,6 +80,16 @@ namespace TelegramBot
             if (userCommand == string.Empty)
                 return true;
 
+            if (_toDoUser == null)
+            {
+                if ((userCommand != "/start") && (userCommand != "/help") && (userCommand != "/info"))
+                {
+                    _botClient.SendMessage(_update.Message.Chat, "Неизвестная команда");
+                    return true;
+                }
+                
+            }
+
             int spacePosition = userCommand.IndexOf(' ');
             string command, parameter;
 
@@ -133,7 +143,7 @@ namespace TelegramBot
                     return false;
 
                 default:
-                    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser.TelegramUserName)}");
+                    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser)}");
                     break;
             }
 
@@ -141,18 +151,26 @@ namespace TelegramBot
         }
 
         private void CommandStart()
-        {
+        {/*
             _botClient.SendMessage(_update.Message.Chat, "Введите свое имя: ");
             var userName = Console.ReadLine() ?? "";
             ValidateString(userName);
-            _toDoUser = new ToDoUser(userName);
+            _toDoUser = new ToDoUser(userName); */
+
+            IUserService userService = new UserService();
+            _toDoUser = userService.GetUser(_update.Message.From.Id);
+            if (_toDoUser == null) 
+            {
+                _toDoUser = userService.RegisterUser(_update.Message.From.Id, _update.Message.From.Username);
+            }
+
             _botClient.SendMessage(_update.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?");
         }
 
         private void CommandHelp()
         {
             _botClient.SendMessage(_update.Message.Chat, @$"
-{GetFullOutput("Справочная информация:", _toDoUser.TelegramUserName)}
+{GetFullOutput("Справочная информация:", _toDoUser)}
 /start - начало работы
 /help - справочная информация
 /info - информация о версии программы и дате её создания
@@ -168,7 +186,7 @@ namespace TelegramBot
 
         private void CommandInfo()
         {
-            _botClient.SendMessage(_update.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser.TelegramUserName));
+            _botClient.SendMessage(_update.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser));
         }
 
         private void CommandAddTask()
@@ -176,7 +194,7 @@ namespace TelegramBot
             if (_toDoItemList.Count >= _taskCountLimit)
                 throw new TaskCountLimitException(_taskCountLimit);
 
-            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите название задачи:", _toDoUser.TelegramUserName)}");
+            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите название задачи:", _toDoUser)}");
             var toDoItemName = Console.ReadLine() ?? "";
             ValidateString(toDoItemName);
 
@@ -204,15 +222,15 @@ namespace TelegramBot
                         toDoItem.State = ToDoItemState.Completed;
                         toDoItem.StateChangedAt = DateTime.Now;
 
-                        _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser.TelegramUserName));
+                        _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser));
                         return;
 
                     }
                 }
-                _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser.TelegramUserName));
+                _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser));
             }
             else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
+                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
 
         }
         private void CommandShowTasks()
@@ -230,11 +248,11 @@ namespace TelegramBot
                 }
                 if (counter == 1)
                 {
-                    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Активных задач нет", _toDoUser.TelegramUserName)}");
+                    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Активных задач нет", _toDoUser)}");
                 }
             }
             else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
+                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
         }
 
         private void CommandShowAllTasks()
@@ -249,7 +267,7 @@ namespace TelegramBot
                 }
             }
             else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser.TelegramUserName)}");
+                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
         }
 
         private void CommandRemoveTask()
@@ -259,7 +277,7 @@ namespace TelegramBot
             if (_toDoItemList.Count == 0)
                 return;
 
-            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите номер задачи для удаления:", _toDoUser.TelegramUserName)}");
+            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите номер задачи для удаления:", _toDoUser)}");
             var taskNo = Console.ReadLine() ?? "";
             var taskNoInt = ParseAndValidateInt(taskNo, 1, _toDoItemList.Count);
 
@@ -269,16 +287,17 @@ namespace TelegramBot
 
         private void CommandExit()
         {
-            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Завершение работы.", _toDoUser.TelegramUserName)}");
+            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Завершение работы.", _toDoUser)}");
             Console.Read();
         }
 
-        private string GetFullOutput(string request, string userName)
+        private string GetFullOutput(string request, ToDoUser? toDoUser)
         {
-            if (userName == string.Empty)
+            
+            if (toDoUser == null)
                 return request;
             else
-                return $"{userName}, {request.ToLower()}";
+                return $"{toDoUser.TelegramUserName}, {request.ToLower()}";
         }
         private int ParseAndValidateInt(string? str, int min, int max)
         {
