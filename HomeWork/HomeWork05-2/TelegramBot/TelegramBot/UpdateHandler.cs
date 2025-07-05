@@ -47,7 +47,31 @@ namespace TelegramBot
                 ValidateString(userCommand);
             }
             */
-            doContinue = ExecuteCommand(update.Message.Text);
+
+            try
+            {
+                doContinue = ExecuteCommand(update.Message.Text);
+            }
+
+            catch (ArgumentException ex)
+            {
+                botClient.SendMessage(update.Message.Chat, ex.Message);
+            }
+
+            catch (TaskCountLimitException ex)
+            {
+                botClient.SendMessage(update.Message.Chat, ex.Message);
+            }
+
+            catch (TaskLengthLimitException ex)
+            {
+                botClient.SendMessage(update.Message.Chat, ex.Message);
+            }
+
+            catch (DuplicateTaskException ex)
+            {
+                botClient.SendMessage(update.Message.Chat, ex.Message);
+            }
 
         }
 
