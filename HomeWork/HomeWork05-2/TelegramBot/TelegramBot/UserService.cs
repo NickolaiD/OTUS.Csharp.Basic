@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Otus.ToDoList.ConsoleBot.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,13 +11,14 @@ namespace TelegramBot
     {
         public ToDoUser? GetUser(long telegramUserId)
         {
-            
-            throw new NotImplementedException();
+
+            return null; // заглушка
         }
 
         public ToDoUser RegisterUser(long telegramUserId, string telegramUserName)
         {
-            throw new NotImplementedException();
+            return new ToDoUser (telegramUserName, telegramUserId);  // заглушка
+            
         }
     }
 }

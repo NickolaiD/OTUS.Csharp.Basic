@@ -3,27 +3,19 @@ using Otus.ToDoList.ConsoleBot.Types;
 
 namespace TelegramBot
 {
-    class UpdateHandler : IUpdateHandler
+    internal class UpdateHandler : IUpdateHandler
     {
         private ToDoUser? _toDoUser;
-        private List<ToDoItem> _toDoItemList;
-        private int _taskCountLimit;
-        private int _taskLengthLimit;
 
         private ITelegramBotClient _botClient;
         private Update _update;
+        private IToDoService _toDoService;
 
-        public UpdateHandler()
-        {
-            _toDoItemList = new List<ToDoItem>();
-            //_toDoUser = new ToDoUser("");
-            _taskCountLimit = 5;
-            _taskLengthLimit = 5;
-        }
         public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
         {
             _botClient = botClient;
             _update = update;
+            _toDoService = new ToDoService(botClient, update);
 
             bool doContinue = true, firstRun = true;
             botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
@@ -119,23 +111,23 @@ namespace TelegramBot
                     break;
 
                 case "/addtask":
-                    CommandAddTask();
+                    _toDoService.Add(_toDoUser, parameter);
                     break;
 
                 case "/completetask":
-                    CommandCompleteTask(parameter);
+                    //CommandCompleteTask(parameter);
                     break;
 
                 case "/showtasks":
-                    CommandShowTasks();
+                   // CommandShowTasks();
                     break;
 
                 case "/showalltasks":
-                    CommandShowAllTasks();
+                    //CommandShowAllTasks();
                     break;
 
                 case "/removetask":
-                    CommandRemoveTask();
+                    //CommandRemoveTask();
                     break;
 
                 case "/exit":
@@ -189,101 +181,81 @@ namespace TelegramBot
             _botClient.SendMessage(_update.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser));
         }
 
-        private void CommandAddTask()
-        {
-            if (_toDoItemList.Count >= _taskCountLimit)
-                throw new TaskCountLimitException(_taskCountLimit);
 
-            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите название задачи:", _toDoUser)}");
-            var toDoItemName = Console.ReadLine() ?? "";
-            ValidateString(toDoItemName);
+        //private void CommandCompleteTask(string parameter)
+        //{
+        //    if (_toDoItemList.Count > 0)
+        //    {
+        //        foreach (var toDoItem in _toDoItemList)
+        //        {
+        //            if ((toDoItem.State == ToDoItemState.Active) && (toDoItem.Id.ToString() == parameter))
+        //            {
+        //                toDoItem.State = ToDoItemState.Completed;
+        //                toDoItem.StateChangedAt = DateTime.Now;
 
-            if (toDoItemName.Length > _taskLengthLimit)
-                throw new TaskLengthLimitException(toDoItemName.Length, _taskLengthLimit);
+        //                _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser));
+        //                return;
 
-            foreach (var toDoItem in _toDoItemList)
-            {
-                if (toDoItem.Name == toDoItemName)
-                    throw new DuplicateTaskException(toDoItemName);
-            }
+        //            }
+        //        }
+        //        _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser));
+        //    }
+        //    else
+        //        _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
 
-            _toDoItemList.Add(new ToDoItem(_toDoUser, toDoItemName));
-            _botClient.SendMessage(_update.Message.Chat, "Задача добавлена");
-        }
+        //}
 
-        private void CommandCompleteTask(string parameter)
-        {
-            if (_toDoItemList.Count > 0)
-            {
-                foreach (var toDoItem in _toDoItemList)
-                {
-                    if ((toDoItem.State == ToDoItemState.Active) && (toDoItem.Id.ToString() == parameter))
-                    {
-                        toDoItem.State = ToDoItemState.Completed;
-                        toDoItem.StateChangedAt = DateTime.Now;
-
-                        _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser));
-                        return;
-
-                    }
-                }
-                _botClient.SendMessage(_update.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser));
-            }
-            else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
-
-        }
-        private void CommandShowTasks()
-        {
-            if (_toDoItemList.Count > 0)
-            {
-                int counter = 1;
-                foreach (var toDoItem in _toDoItemList)
-                {
-                    if (toDoItem.State == ToDoItemState.Active)
-                    {
-                        _botClient.SendMessage(_update.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}");
-                        counter++;
-                    }
-                }
-                if (counter == 1)
-                {
-                    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Активных задач нет", _toDoUser)}");
-                }
-            }
-            else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
-        }
+        //private void CommandShowTasks()
+        //{
+        //    if (_toDoItemList.Count > 0)
+        //    {
+        //        int counter = 1;
+        //        foreach (var toDoItem in _toDoItemList)
+        //        {
+        //            if (toDoItem.State == ToDoItemState.Active)
+        //            {
+        //                _botClient.SendMessage(_update.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}");
+        //                counter++;
+        //            }
+        //        }
+        //        if (counter == 1)
+        //        {
+        //            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Активных задач нет", _toDoUser)}");
+        //        }
+        //    }
+        //    else
+        //        _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
+        //}
 
         private void CommandShowAllTasks()
         {
-            if (_toDoItemList.Count > 0)
-            {
-                int counter = 1;
-                foreach (var toDoItem in _toDoItemList)
-                {
-                    _botClient.SendMessage(_update.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}");
-                    counter++;
-                }
-            }
-            else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
+            //if (_toDoItemList.Count > 0)
+            //{
+            //    int counter = 1;
+            //    foreach (var toDoItem in _toDoItemList)
+            //    {
+            //        _botClient.SendMessage(_update.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}");
+            //        counter++;
+            //    }
+            //}
+            //else
+            //    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
         }
 
-        private void CommandRemoveTask()
-        {
-            CommandShowTasks();
+        //private void CommandRemoveTask()
+        //{
+        //    CommandShowTasks();
 
-            if (_toDoItemList.Count == 0)
-                return;
+        //    if (_toDoItemList.Count == 0)
+        //        return;
 
-            _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите номер задачи для удаления:", _toDoUser)}");
-            var taskNo = Console.ReadLine() ?? "";
-            var taskNoInt = ParseAndValidateInt(taskNo, 1, _toDoItemList.Count);
+        //    _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Введите номер задачи для удаления:", _toDoUser)}");
+        //    var taskNo = Console.ReadLine() ?? "";
+        //    var taskNoInt = ParseAndValidateInt(taskNo, 1, _toDoItemList.Count);
 
-            _toDoItemList.RemoveAt(taskNoInt - 1);
-            _botClient.SendMessage(_update.Message.Chat, $"Задача с номером {taskNoInt} удалена");
-        }
+        //    _toDoItemList.RemoveAt(taskNoInt - 1);
+        //    _botClient.SendMessage(_update.Message.Chat, $"Задача с номером {taskNoInt} удалена");
+        //}
 
         private void CommandExit()
         {
@@ -306,22 +278,6 @@ namespace TelegramBot
                 throw new ArgumentException();
             }
             return result;
-        }
-
-        private void ValidateString(string? str)
-        {
-            if (!String.IsNullOrEmpty(str))
-            {
-                foreach (var item in str)
-                {
-                    if (!char.IsWhiteSpace(item))
-                    {
-                        return;
-                    }
-                }
-            }
-
-            throw new ArgumentException();
         }
     }
 }
