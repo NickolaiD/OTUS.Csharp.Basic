@@ -11,13 +11,13 @@ namespace TelegramBot
         public Guid UserId { get; }
         public string TelegramUserName { get;}
         public DateTime RegisteredAt { get; }
-
-        public ToDoUser(string telegramUserName)
+        public long TelegramUserId {  get; }
+        public ToDoUser(string telegramUserName, long telegramUserId)
         {
             UserId = Guid.NewGuid();
             RegisteredAt = DateTime.UtcNow;
             TelegramUserName = telegramUserName;
-
+            TelegramUserId = telegramUserId;
         }
 
     }
