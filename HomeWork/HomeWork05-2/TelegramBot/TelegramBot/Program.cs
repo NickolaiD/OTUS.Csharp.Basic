@@ -1,6 +1,4 @@
 ﻿using Otus.ToDoList.ConsoleBot;
-using System.Diagnostics;
-using System.Reflection.Metadata;
 
 namespace TelegramBot
 {
@@ -19,21 +17,12 @@ namespace TelegramBot
             {
                 ShowError($"Произошла непредвиденная ошибка:{ex.GetType()}\n{ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
             }
-
         }
-        
-
-        
         private static void ShowError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ForegroundColor = ConsoleColor.White;
         }
-
-
-
-
-
     }
 }

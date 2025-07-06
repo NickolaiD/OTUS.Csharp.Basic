@@ -1,28 +1,23 @@
 ﻿using Otus.ToDoList.ConsoleBot;
 using Otus.ToDoList.ConsoleBot.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TelegramBot
 {
     internal class ToDoService : IToDoService
     {
         private List<ToDoItem> _toDoItemList;
-        private int _taskCountLimit;
-        private int _taskLengthLimit;
-        private ITelegramBotClient _botClient;
-        private Update _update;
-        public ToDoService(ITelegramBotClient botClient, Update update)
+        private readonly int _taskCountLimit;
+        private readonly int _taskLengthLimit;
+        private readonly ITelegramBotClient _botClient;
+        private readonly Update _update;
+        public ToDoService(ITelegramBotClient botClient, Update update, int taskCountLimit, int taskLengthLimit)
         {
             _toDoItemList = new List<ToDoItem>();
             _botClient = botClient;
             _update = update;
 
-            _taskCountLimit = 5;
-            _taskLengthLimit = 5;
+            _taskCountLimit = taskCountLimit;
+            _taskLengthLimit = taskLengthLimit;
         }
 
         public ToDoItem Add(ToDoUser user, string toDoItemName)
@@ -44,41 +39,53 @@ namespace TelegramBot
             var newToDoItem = new ToDoItem(user, toDoItemName);
             _toDoItemList.Add(newToDoItem);
 
-            _botClient.SendMessage(_update.Message.Chat, "Задача добавлена");
-
             return newToDoItem;
 
         }
 
         public void Delete(Guid id)
         {
-            throw new NotImplementedException();
+            foreach (var toDoItem in _toDoItemList)
+            {
+                if (id == toDoItem.Id)
+                {
+                    _toDoItemList.Remove(toDoItem);
+                    return;
+                }
+            }
         }
 
         public IReadOnlyList<ToDoItem> GetActiveByUserId(Guid userId)
         {
-            throw new NotImplementedException();
+            var userToDoItemList = new List<ToDoItem>();
+            foreach (var toDoItem in _toDoItemList)
+                if ((toDoItem.User.UserId == userId) && (toDoItem.State == ToDoItemState.Active))
+                    userToDoItemList.Add(toDoItem);
+
+            return userToDoItemList;
         }
 
         public IReadOnlyList<ToDoItem> GetAllByUserId(Guid userId)
         {
+            var userToDoItemList = new List<ToDoItem>();
+            foreach (var toDoItem in _toDoItemList)
+                if (toDoItem.User.UserId == userId)
+                    userToDoItemList.Add(toDoItem);
 
-            if (_toDoItemList.Count > 0)
-            {
-                int counter = 1;
-                foreach (var toDoItem in _toDoItemList)
-                {
-                    _botClient.SendMessage(_update.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}");
-                    counter++;
-                }
-            }
-            else
-                _botClient.SendMessage(_update.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");
+            return userToDoItemList;            
         }
 
         public void MarkCompleted(Guid id)
         {
-            throw new NotImplementedException();
+            foreach (var toDoItem in _toDoItemList)
+            {
+                if ((toDoItem.State == ToDoItemState.Active) && (toDoItem.Id == id))
+                {
+                    toDoItem.State = ToDoItemState.Completed;
+                    toDoItem.StateChangedAt = DateTime.Now;
+                    return;
+                }
+            }
         }
 
         private void ValidateString(string? str)
