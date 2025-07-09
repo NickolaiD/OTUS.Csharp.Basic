@@ -9,12 +9,10 @@ namespace TelegramBot
         private readonly int _taskCountLimit;
         private readonly int _taskLengthLimit;
         private readonly ITelegramBotClient _botClient;
-        private readonly Update _update;
-        public ToDoService(ITelegramBotClient botClient, Update update, int taskCountLimit, int taskLengthLimit)
+        public ToDoService(ITelegramBotClient botClient, int taskCountLimit, int taskLengthLimit)
         {
             _toDoItemList = new List<ToDoItem>();
             _botClient = botClient;
-            _update = update;
 
             _taskCountLimit = taskCountLimit;
             _taskLengthLimit = taskLengthLimit;
@@ -101,7 +99,7 @@ namespace TelegramBot
                 }
             }
 
-            throw new ArgumentException();
+            throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
         }
 
     }
