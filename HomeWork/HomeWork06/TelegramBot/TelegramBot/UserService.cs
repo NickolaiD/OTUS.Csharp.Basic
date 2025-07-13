@@ -2,26 +2,21 @@
 {
     internal class UserService : IUserService
     {
-        private List<ToDoUser> toDoUsers;
+        private IUserRepository userRepository;
+
         public UserService()
         {
-            toDoUsers = new List<ToDoUser>();
+            userRepository = new InMemoryUserRepository();
         }
         public ToDoUser? GetUser(long telegramUserId)
         {
-            foreach (var user in toDoUsers)
-            {
-                if (user.TelegramUserId == telegramUserId)
-                    return user;
-            }
-            return null;
+            return userRepository.GetUserByTelegramUserId(telegramUserId);
         }
 
         public ToDoUser RegisterUser(long telegramUserId, string telegramUserName)
         {
             var user = new ToDoUser(telegramUserName, telegramUserId);
-            toDoUsers.Add(user);
-
+            userRepository.Add(user);
             return user;
         }
     }
