@@ -8,17 +8,15 @@ namespace TelegramBot
         private List<ToDoItem> _toDoItemList;
         private readonly int _taskCountLimit;
         private readonly int _taskLengthLimit;
-        private readonly ITelegramBotClient _botClient;
         private readonly IToDoRepository _toDoRepository;
-        public ToDoService(ITelegramBotClient botClient, int taskCountLimit, int taskLengthLimit)
+        public ToDoService(int taskCountLimit, int taskLengthLimit, InMemoryToDoRepository toDoRepository)
         {
             _toDoItemList = new List<ToDoItem>();
-            _botClient = botClient;
 
             _taskCountLimit = taskCountLimit;
             _taskLengthLimit = taskLengthLimit;
 
-            _toDoRepository = new InMemoryToDoRepository();
+            _toDoRepository = toDoRepository;
         }
 
         public ToDoItem Add(ToDoUser user, string toDoItemName)

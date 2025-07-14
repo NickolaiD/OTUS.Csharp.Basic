@@ -8,12 +8,14 @@ namespace TelegramBot
         private readonly IUserService _userService;
         private readonly ITelegramBotClient _botClient;
         private readonly IToDoService _toDoService;
+        private readonly IToDoReportService _toDoReportService;
 
-        public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService)
+        public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService, IToDoReportService toDoReportService)
         {
             _userService = userService;
             _botClient = botClient;
             _toDoService = toDoService;
+            _toDoReportService = toDoReportService;
         }
         public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
         {
@@ -106,6 +108,10 @@ namespace TelegramBot
 
                 case "/removetask":
                     CommandRemoveTask(parameter, botUpdate);
+                    break;
+                
+                case "/report":
+                    CommandReport(botUpdate);
                     break;
 
                 case "/exit":
@@ -219,8 +225,8 @@ namespace TelegramBot
 
         private void CommandRemoveTask(string taskNo, Update botUpdate)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var userToDoItemList = _toDoService.GetActiveByUserId(_toDoUser.UserId);
+            var toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var userToDoItemList = _toDoService.GetActiveByUserId(toDoUser.UserId);
             
             if (userToDoItemList.Count == 0)
             {
@@ -232,6 +238,14 @@ namespace TelegramBot
 
             _toDoService.Delete(userToDoItemList[taskNoInt - 1].Id);
             _botClient.SendMessage(botUpdate.Message.Chat, $"Задача с номером {taskNoInt} удалена");
+        }
+
+        private void CommandReport(Update botUpdate)
+        {
+            var toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var stats = _toDoReportService.GetUserStats(toDoUser.UserId);
+            _botClient.SendMessage(botUpdate.Message.Chat, 
+                $"Статистика по задачам на {stats.generatedAt}. Всего: {stats.total}; Завершенных: {stats.completed}; Активных: {stats.active}");
         }
 
         private void CommandExit(Update botUpdate)
