@@ -9,6 +9,7 @@ namespace TelegramBot
         private readonly int _taskCountLimit;
         private readonly int _taskLengthLimit;
         private readonly ITelegramBotClient _botClient;
+        private readonly IToDoRepository _toDoRepository;
         public ToDoService(ITelegramBotClient botClient, int taskCountLimit, int taskLengthLimit)
         {
             _toDoItemList = new List<ToDoItem>();
@@ -16,6 +17,8 @@ namespace TelegramBot
 
             _taskCountLimit = taskCountLimit;
             _taskLengthLimit = taskLengthLimit;
+
+            _toDoRepository = new InMemoryToDoRepository();
         }
 
         public ToDoItem Add(ToDoUser user, string toDoItemName)
@@ -28,61 +31,38 @@ namespace TelegramBot
             if (toDoItemName.Length > _taskLengthLimit)
                 throw new TaskLengthLimitException(toDoItemName.Length, _taskLengthLimit);
 
-            foreach (var toDoItem in _toDoItemList)
-            {
-                if (toDoItem.Name == toDoItemName)
-                    throw new DuplicateTaskException(toDoItemName);
+            if (_toDoRepository.ExistsByName(user.UserId, toDoItemName))
+            { 
+                throw new DuplicateTaskException(toDoItemName);
             }
 
             var newToDoItem = new ToDoItem(user, toDoItemName);
-            _toDoItemList.Add(newToDoItem);
 
+            _toDoRepository.Add(newToDoItem);
             return newToDoItem;
-
         }
 
         public void Delete(Guid id)
         {
-            foreach (var toDoItem in _toDoItemList)
-            {
-                if (id == toDoItem.Id)
-                {
-                    _toDoItemList.Remove(toDoItem);
-                    return;
-                }
-            }
+            _toDoRepository.Delete(id);
         }
 
         public IReadOnlyList<ToDoItem> GetActiveByUserId(Guid userId)
         {
-            var userToDoItemList = new List<ToDoItem>();
-            foreach (var toDoItem in _toDoItemList)
-                if ((toDoItem.User.UserId == userId) && (toDoItem.State == ToDoItemState.Active))
-                    userToDoItemList.Add(toDoItem);
-
-            return userToDoItemList;
+            return _toDoRepository.GetActiveByUserId(userId);
         }
 
         public IReadOnlyList<ToDoItem> GetAllByUserId(Guid userId)
         {
-            var userToDoItemList = new List<ToDoItem>();
-            foreach (var toDoItem in _toDoItemList)
-                if (toDoItem.User.UserId == userId)
-                    userToDoItemList.Add(toDoItem);
-
-            return userToDoItemList;            
+            return _toDoRepository.GetAllByUserId(userId);
         }
 
         public void MarkCompleted(Guid id)
         {
-            foreach (var toDoItem in _toDoItemList)
+            var toDoItem = _toDoRepository.Get(id);
+            if (toDoItem != null)
             {
-                if ((toDoItem.State == ToDoItemState.Active) && (toDoItem.Id == id))
-                {
-                    toDoItem.State = ToDoItemState.Completed;
-                    toDoItem.StateChangedAt = DateTime.Now;
-                    return;
-                }
+                _toDoRepository.Update(toDoItem);
             }
         }
 

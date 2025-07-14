@@ -2,7 +2,7 @@
 {
     internal class UserService : IUserService
     {
-        private IUserRepository userRepository;
+        private readonly IUserRepository userRepository;
 
         public UserService()
         {
