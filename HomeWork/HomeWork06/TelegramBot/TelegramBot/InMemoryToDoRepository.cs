@@ -38,7 +38,7 @@ namespace TelegramBot
         {
             return _toDoItemList.Where(x => (x.User.UserId == userId) && (x.Name == name) && (x.State == ToDoItemState.Active)).Count() > 0;
         }
-
+       
         public ToDoItem? Get(Guid id)
         {
             return _toDoItemList.Where(x => x.Id == id).FirstOrDefault();
@@ -58,6 +58,10 @@ namespace TelegramBot
         {
                 item.State = ToDoItemState.Completed;
                 item.StateChangedAt = DateTime.Now;
+        }
+        public IReadOnlyList<ToDoItem> Find(Guid userId, Func<ToDoItem, bool> predicate)
+        {
+            return _toDoItemList.Where(predicate).ToList();
         }
     }
 }

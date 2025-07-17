@@ -99,7 +99,7 @@ namespace TelegramBot
                     break;
 
                 case "/showtasks":
-                      CommandShowTasks(botUpdate);
+                      CommandShowTasks(parameter, botUpdate);
                     break;
 
                 case "/showalltasks":
@@ -112,6 +112,9 @@ namespace TelegramBot
                 
                 case "/report":
                     CommandReport(botUpdate);
+                    break;
+                case "/find":
+                    CommandShowTasks(parameter, botUpdate);
                     break;
 
                 case "/exit":
@@ -187,10 +190,19 @@ namespace TelegramBot
             _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser));
         }
 
-        private void CommandShowTasks(Update botUpdate)
+        private void CommandShowTasks(string parameter, Update botUpdate)
         {
             var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var userToDoItemList = _toDoService.GetActiveByUserId(_toDoUser.UserId);
+            IReadOnlyList<ToDoItem> userToDoItemList;
+            if (parameter == string.Empty)
+            {
+                userToDoItemList = _toDoService.GetActiveByUserId(_toDoUser.UserId);
+            }
+            else
+            {
+                userToDoItemList = _toDoService.Find(_toDoUser, parameter);
+            }
+            
             if (userToDoItemList.Count == 0)
             {
                 _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}");

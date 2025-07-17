@@ -80,6 +80,10 @@ namespace TelegramBot
             throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
         }
 
+        public IReadOnlyList<ToDoItem> Find(ToDoUser user, string namePrefix)
+        {
+            return _toDoRepository.Find(user.UserId, x => x.Name.StartsWith(namePrefix));
+        }
     }
 
 }
