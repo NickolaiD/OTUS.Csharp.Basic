@@ -1,4 +1,8 @@
-﻿namespace TelegramBot
+﻿using TelegramBot.Core.DataAccess;
+using TelegramBot.Entities;
+using TelegramBot.Infrastructure.DataAccess;
+
+namespace TelegramBot.Services
 {
     internal class UserService : IUserService
     {

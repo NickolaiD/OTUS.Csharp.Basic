@@ -1,5 +1,8 @@
 ﻿using Otus.ToDoList.ConsoleBot;
 using Otus.ToDoList.ConsoleBot.Types;
+using TelegramBot.Entities;
+using TelegramBot.Exceptions;
+using TelegramBot.Services;
 
 namespace TelegramBot
 {

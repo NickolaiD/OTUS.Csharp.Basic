@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TelegramBot.Entities;
 
-namespace TelegramBot
+namespace TelegramBot.Core.DataAccess
 {
     interface IUserRepository
     {

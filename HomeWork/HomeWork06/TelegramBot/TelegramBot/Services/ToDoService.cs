@@ -1,7 +1,9 @@
-﻿using Otus.ToDoList.ConsoleBot;
-using Otus.ToDoList.ConsoleBot.Types;
+﻿using TelegramBot.Core.DataAccess;
+using TelegramBot.Entities;
+using TelegramBot.Exceptions;
+using TelegramBot.Infrastructure.DataAccess;
 
-namespace TelegramBot
+namespace TelegramBot.Services
 {
     internal class ToDoService : IToDoService
     {
@@ -66,7 +68,7 @@ namespace TelegramBot
 
         private void ValidateString(string? str)
         {
-            if (!String.IsNullOrEmpty(str))
+            if (!string.IsNullOrEmpty(str))
             {
                 foreach (var item in str)
                 {

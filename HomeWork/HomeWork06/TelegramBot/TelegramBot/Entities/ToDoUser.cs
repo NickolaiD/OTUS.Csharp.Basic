@@ -1,4 +1,4 @@
-﻿namespace TelegramBot
+﻿namespace TelegramBot.Entities
 {
     internal class ToDoUser
     {

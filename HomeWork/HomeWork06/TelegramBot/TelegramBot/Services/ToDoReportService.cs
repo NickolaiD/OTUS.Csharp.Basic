@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TelegramBot.Infrastructure.DataAccess;
 
-namespace TelegramBot
+namespace TelegramBot.Services
 {
     internal class ToDoReportService : IToDoReportService
     {

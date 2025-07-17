@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using TelegramBot.Core.DataAccess;
+using TelegramBot.Entities;
 
-namespace TelegramBot
+namespace TelegramBot.Infrastructure.DataAccess
 {
     internal class InMemoryToDoRepository : IToDoRepository
     {
@@ -22,7 +24,7 @@ namespace TelegramBot
 
         public int CountActive(Guid userId)
         {
-            return _toDoItemList.Where(x => (x.User.UserId == userId) && (x.State == ToDoItemState.Active)).Count();
+            return _toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).Count();
         }
 
         public void Delete(Guid id)
@@ -36,7 +38,7 @@ namespace TelegramBot
 
         public bool ExistsByName(Guid userId, string name)
         {
-            return _toDoItemList.Where(x => (x.User.UserId == userId) && (x.Name == name) && (x.State == ToDoItemState.Active)).Count() > 0;
+            return _toDoItemList.Where(x => x.User.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0;
         }
        
         public ToDoItem? Get(Guid id)
@@ -46,12 +48,12 @@ namespace TelegramBot
 
         public IReadOnlyList<ToDoItem> GetActiveByUserId(Guid userId)
         {
-            return _toDoItemList.Where(x => (x.User.UserId == userId) && (x.State == ToDoItemState.Active)).ToList();
+            return _toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).ToList();
         }
 
         public IReadOnlyList<ToDoItem> GetAllByUserId(Guid userId)
         {
-            return _toDoItemList.Where(x => (x.User.UserId == userId)).ToList();
+            return _toDoItemList.Where(x => x.User.UserId == userId).ToList();
         }
 
         public void Update(ToDoItem item)

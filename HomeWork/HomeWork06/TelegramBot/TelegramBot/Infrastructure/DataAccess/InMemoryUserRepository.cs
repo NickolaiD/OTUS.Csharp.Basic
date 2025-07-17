@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TelegramBot.Core.DataAccess;
+using TelegramBot.Entities;
 
-namespace TelegramBot
+namespace TelegramBot.Infrastructure.DataAccess
 {
     internal class InMemoryUserRepository : IUserRepository
     {
