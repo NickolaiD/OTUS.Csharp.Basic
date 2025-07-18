@@ -63,7 +63,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public IReadOnlyList<ToDoItem> Find(Guid userId, Func<ToDoItem, bool> predicate)
         {
-            return _toDoItemList.Where(predicate).ToList();
+            return _toDoItemList.Where(x => x.User.UserId == userId).Where(predicate).ToList();
         }
     }
 }
