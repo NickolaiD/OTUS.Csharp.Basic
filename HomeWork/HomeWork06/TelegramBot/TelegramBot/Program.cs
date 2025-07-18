@@ -1,5 +1,6 @@
 ﻿using Otus.ToDoList.ConsoleBot;
-using Otus.ToDoList.ConsoleBot.Types;
+using TelegramBot.Infrastructure.DataAccess;
+using TelegramBot.Services;
 
 namespace TelegramBot
 {
@@ -9,7 +10,6 @@ namespace TelegramBot
         {
             try
             {
-
                 Console.WriteLine("Введите максимально допустимое количество задач");
                 var taskCountLimit = UpdateHandler.ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
@@ -17,7 +17,11 @@ namespace TelegramBot
                 var taskLengthLimit = UpdateHandler.ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
                 var botClient = new ConsoleBotClient();
-                var handler = new UpdateHandler(new UserService(), botClient, new ToDoService(botClient, taskCountLimit, taskLengthLimit));
+                var toDoRepository = new InMemoryToDoRepository();
+                var handler = new UpdateHandler(new UserService(),
+                                                botClient,
+                                                new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository),
+                                                new ToDoReportService(toDoRepository));
             
                 botClient.StartReceiving(handler);
             }

@@ -1,5 +1,4 @@
-﻿
-namespace TelegramBot
+﻿namespace TelegramBot.Exceptions
 {
     class TaskLengthLimitException : Exception
     {
