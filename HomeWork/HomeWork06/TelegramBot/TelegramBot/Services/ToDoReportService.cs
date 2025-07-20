@@ -10,7 +10,7 @@ namespace TelegramBot.Services
 {
     internal class ToDoReportService : IToDoReportService
     {
-        InMemoryToDoRepository _toDoRepository;
+        private readonly InMemoryToDoRepository _toDoRepository;
         public ToDoReportService(InMemoryToDoRepository toDoRepository)
         {
             _toDoRepository = toDoRepository;

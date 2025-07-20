@@ -7,17 +7,13 @@ namespace TelegramBot.Services
 {
     internal class ToDoService : IToDoService
     {
-        private List<ToDoItem> _toDoItemList;
         private readonly int _taskCountLimit;
         private readonly int _taskLengthLimit;
         private readonly IToDoRepository _toDoRepository;
-        public ToDoService(int taskCountLimit, int taskLengthLimit, InMemoryToDoRepository toDoRepository)
+        public ToDoService(int taskCountLimit, int taskLengthLimit, IToDoRepository toDoRepository)
         {
-            _toDoItemList = new List<ToDoItem>();
-
             _taskCountLimit = taskCountLimit;
             _taskLengthLimit = taskLengthLimit;
-
             _toDoRepository = toDoRepository;
         }
 
@@ -25,7 +21,7 @@ namespace TelegramBot.Services
         {
             ValidateString(toDoItemName);
 
-            if (_toDoItemList.Count >= _taskCountLimit)
+            if (_toDoRepository.CountActive(user.UserId) >= _taskCountLimit)
                 throw new TaskCountLimitException(_taskCountLimit);
 
             if (toDoItemName.Length > _taskLengthLimit)

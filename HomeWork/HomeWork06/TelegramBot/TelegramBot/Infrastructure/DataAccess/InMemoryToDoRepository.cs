@@ -12,7 +12,7 @@ namespace TelegramBot.Infrastructure.DataAccess
 {
     internal class InMemoryToDoRepository : IToDoRepository
     {
-        private List<ToDoItem> _toDoItemList;
+        private readonly List<ToDoItem> _toDoItemList;
         public InMemoryToDoRepository()
         {
             _toDoItemList = new List<ToDoItem>();
