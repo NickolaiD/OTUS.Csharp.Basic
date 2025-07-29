@@ -18,12 +18,13 @@ namespace TelegramBot
 
                 var botClient = new ConsoleBotClient();
                 var toDoRepository = new InMemoryToDoRepository();
+                var cts = new CancellationTokenSource();
                 var handler = new UpdateHandler(new UserService(),
                                                 botClient,
                                                 new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository),
                                                 new ToDoReportService(toDoRepository));
-            
-                botClient.StartReceiving(handler);
+                
+                botClient.StartReceiving(handler, cts.Token);
             }
             catch (Exception ex)
             {
