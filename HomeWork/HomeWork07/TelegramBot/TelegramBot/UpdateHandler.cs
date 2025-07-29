@@ -7,12 +7,15 @@ using TelegramBot.Services;
 
 namespace TelegramBot
 {
+    public delegate void MessageEventHandler(string  message);
     internal class UpdateHandler : IUpdateHandler
     {
         private readonly IUserService _userService;
         private readonly ITelegramBotClient _botClient;
         private readonly IToDoService _toDoService;
         private readonly IToDoReportService _toDoReportService;
+        private event MessageEventHandler OnHandleUpdateStarted;
+        private event MessageEventHandler OnHandleUpdateCompleted;
 
         public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService, IToDoReportService toDoReportService)
         {
@@ -23,9 +26,11 @@ namespace TelegramBot
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
         {
-
+            PublishOnUpdateStarted(update.Message.Text);
+            
             try
             {
+                
                 await ExecuteCommand(update, ct);
             }
 
@@ -48,6 +53,8 @@ namespace TelegramBot
             {
                 await botClient.SendMessage(update.Message.Chat, ex.Message, ct);
             }
+
+            PublishOnUpdateCompleted(update.Message.Text);
         }
 
         private async Task ExecuteCommand(Update botUpdate, CancellationToken ct)
@@ -295,5 +302,14 @@ namespace TelegramBot
             Console.WriteLine($"HandleError: {exception})");
             return Task.CompletedTask;
         }
+
+        public void SubscribeOnUpdateStarted(MessageEventHandler handler) => OnHandleUpdateStarted += handler;
+        public void SubscribeOnUpdateCompleted(MessageEventHandler handler) => OnHandleUpdateCompleted += handler;
+        public void UnSubscribeOnUpdateStarted(MessageEventHandler handler) => OnHandleUpdateStarted -= handler;
+        public void UnSubscribeOnUpdateCompleted(MessageEventHandler handler) => OnHandleUpdateCompleted -= handler;
+
+        public void PublishOnUpdateStarted(string message) => OnHandleUpdateStarted.Invoke(message);
+        public void PublishOnUpdateCompleted(string message) => OnHandleUpdateCompleted.Invoke(message);
+
     }
 }
