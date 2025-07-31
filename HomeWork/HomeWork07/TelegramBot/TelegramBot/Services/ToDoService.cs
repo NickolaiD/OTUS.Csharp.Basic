@@ -45,7 +45,7 @@ namespace TelegramBot.Services
 
         public async Task<IReadOnlyList<ToDoItem>> GetActiveByUserIdAsync(Guid userId, CancellationToken ct)
         {
-            return await GetActiveByUserIdAsync(userId, ct);
+            return await _toDoRepository.GetActiveByUserIdAsync(userId, ct);
         }
 
         public async Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)

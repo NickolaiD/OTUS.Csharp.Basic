@@ -18,7 +18,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public async Task AddAsync(ToDoUser user, CancellationToken ct)
         {
-            if (GetUserByTelegramUserIdAsync(user.TelegramUserId, ct) == null)
+            if (await GetUserByTelegramUserIdAsync(user.TelegramUserId, ct) == null)
             {
                 await Task.Run(() => _toDoUsers.Add(user));
             }

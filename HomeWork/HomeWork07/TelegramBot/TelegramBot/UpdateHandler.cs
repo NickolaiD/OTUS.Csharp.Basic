@@ -210,7 +210,7 @@ namespace TelegramBot
             IReadOnlyList<ToDoItem> userToDoItemList;
             if (parameter == string.Empty)
             {
-                userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
+                userToDoItemList = await _toDoService.GetActiveByUserIdAsync(_toDoUser.UserId, ct);
             }
             else
             {
