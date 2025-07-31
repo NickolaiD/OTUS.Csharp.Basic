@@ -4,12 +4,12 @@ namespace TelegramBot.Services
 {
     internal interface IToDoService
     {
-        IReadOnlyList<ToDoItem> GetAllByUserId(Guid userId);
+        Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct);
         //Возвращает ToDoItem для UserId со статусом Active
-        IReadOnlyList<ToDoItem> GetActiveByUserId(Guid userId);
-        ToDoItem Add(ToDoUser user, string name);
-        void MarkCompleted(Guid id);
-        void Delete(Guid id);
-        IReadOnlyList<ToDoItem> Find(ToDoUser user, string namePrefix);
+        Task<IReadOnlyList<ToDoItem>> GetActiveByUserIdAsync(Guid userId, CancellationToken ct);
+        Task<ToDoItem> AddAsync(ToDoUser user, string name, CancellationToken ct);
+        Task MarkCompletedAsync(Guid id, CancellationToken ct);
+        Task DeleteAsync(Guid id, CancellationToken ct);
+        Task<IReadOnlyList<ToDoItem>> FindAsync(ToDoUser user, string namePrefix, CancellationToken ct);
     }
 }

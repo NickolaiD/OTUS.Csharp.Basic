@@ -8,6 +8,6 @@ namespace TelegramBot.Services
 {
     interface IToDoReportService
     {
-        (int total, int completed, int active, DateTime generatedAt) GetUserStats(Guid userId);
+        Task<(int total, int completed, int active, DateTime generatedAt)> GetUserStatsAsync(Guid userId, CancellationToken ct);
     }
 }

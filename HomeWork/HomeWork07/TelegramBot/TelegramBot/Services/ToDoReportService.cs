@@ -15,12 +15,12 @@ namespace TelegramBot.Services
         {
             _toDoRepository = toDoRepository;
         }
-        public (int total, int completed, int active, DateTime generatedAt) GetUserStats(Guid userId)
+        public async Task<(int total, int completed, int active, DateTime generatedAt)> GetUserStatsAsync(Guid userId, CancellationToken ct)
         {
-            var toDoItemList = _toDoRepository.GetAllByUserId(userId);
-            var total = toDoItemList.Count;
-            var completed = toDoItemList.Where(x => x.State == ToDoItemState.Completed).Count();
-            var active = toDoItemList.Where(x => x.State == ToDoItemState.Active).Count();
+            var toDoItemList = await _toDoRepository.GetAllByUserIdAsync(userId, ct);
+            var total = await Task.Run(() => toDoItemList.Count);
+            var completed = await Task.Run(() => toDoItemList.Where(x => x.State == ToDoItemState.Completed).Count());
+            var active = await Task.Run(() => toDoItemList.Where(x => x.State == ToDoItemState.Active).Count());
 
             return (total, completed, active, DateTime.Now);
             

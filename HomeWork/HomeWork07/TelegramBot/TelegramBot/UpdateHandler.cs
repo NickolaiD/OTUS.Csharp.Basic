@@ -59,7 +59,7 @@ namespace TelegramBot
 
         private async Task ExecuteCommand(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             var userCommand = botUpdate.Message.Text;
             if (userCommand == string.Empty)
                 return;
@@ -141,16 +141,16 @@ namespace TelegramBot
 
         private async Task CommandStart(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             if (_toDoUser == null) 
-                _toDoUser = _userService.RegisterUser(botUpdate.Message.From.Id, botUpdate.Message.From.Username);
+                _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, ct);
 
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", ct);
         }
 
         private async Task CommandHelp(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             await _botClient.SendMessage(botUpdate.Message.Chat, @$"
 {GetFullOutput("Справочная информация:", _toDoUser)}
 /start - начало работы
@@ -170,21 +170,21 @@ namespace TelegramBot
 
         private async Task CommandInfo(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser), ct);
         }
 
         private async Task CommandAddTask(string parameter, Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            _toDoService.Add(_toDoUser, parameter);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            await _toDoService.AddAsync(_toDoUser, parameter, ct);
             await _botClient.SendMessage(botUpdate.Message.Chat, "Задача добавлена", ct);
         }
 
         private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var userToDoItemList = _toDoService.GetActiveByUserId(_toDoUser.UserId);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
 
             if (userToDoItemList.Count == 0)
             {
@@ -196,7 +196,7 @@ namespace TelegramBot
             {
                 if (toDoItem.Id.ToString() == parameter)
                 {
-                    _toDoService.MarkCompleted(toDoItem.Id);
+                    await _toDoService.MarkCompletedAsync(toDoItem.Id, ct);
                     await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser), ct);
                     return;
                 }
@@ -206,15 +206,15 @@ namespace TelegramBot
 
         private async Task CommandShowTasks(string parameter, Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             IReadOnlyList<ToDoItem> userToDoItemList;
             if (parameter == string.Empty)
             {
-                userToDoItemList = _toDoService.GetActiveByUserId(_toDoUser.UserId);
+                userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
             }
             else
             {
-                userToDoItemList = _toDoService.Find(_toDoUser, parameter);
+                userToDoItemList = await _toDoService.FindAsync(_toDoUser, parameter, ct);
             }
             
             if (userToDoItemList.Count == 0)
@@ -233,8 +233,8 @@ namespace TelegramBot
 
         private async Task CommandShowAllTasks(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var userToDoItemList = _toDoService.GetAllByUserId(_toDoUser.UserId);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
             if (userToDoItemList.Count == 0)
             {
                 await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", ct);
@@ -251,8 +251,8 @@ namespace TelegramBot
 
         private async Task CommandRemoveTask(string taskNo, Update botUpdate, CancellationToken ct)
         {
-            var toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var userToDoItemList = _toDoService.GetActiveByUserId(toDoUser.UserId);
+            var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(toDoUser.UserId, ct);
             
             if (userToDoItemList.Count == 0)
             {
@@ -262,21 +262,21 @@ namespace TelegramBot
             
             var taskNoInt = ParseAndValidateInt(taskNo, 1, userToDoItemList.Count);
 
-            _toDoService.Delete(userToDoItemList[taskNoInt - 1].Id);
+            await _toDoService.DeleteAsync(userToDoItemList[taskNoInt - 1].Id, ct);
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Задача с номером {taskNoInt} удалена", ct);
         }
 
         private async Task CommandReport(Update botUpdate, CancellationToken ct)
         {
-            var toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
-            var stats = _toDoReportService.GetUserStats(toDoUser.UserId);
+            var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            var stats = await Task.Run(() => _toDoReportService.GetUserStatsAsync(toDoUser.UserId, ct));
             await _botClient.SendMessage(botUpdate.Message.Chat, 
                 $"Статистика по задачам на {stats.generatedAt}. Всего: {stats.total}; Завершенных: {stats.completed}; Активных: {stats.active}", ct);
         }
 
         private async Task CommandExit(Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = _userService.GetUser(botUpdate.Message.From.Id);
+            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Завершение работы.", _toDoUser)}", ct);
             Console.Read();
         }
