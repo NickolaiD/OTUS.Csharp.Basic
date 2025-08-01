@@ -17,48 +17,48 @@ namespace TelegramBot.Services
             _toDoRepository = toDoRepository;
         }
 
-        public ToDoItem Add(ToDoUser user, string toDoItemName)
+        public async Task<ToDoItem> AddAsync(ToDoUser user, string toDoItemName, CancellationToken ct)
         {
             ValidateString(toDoItemName);
 
-            if (_toDoRepository.CountActive(user.UserId) >= _taskCountLimit)
+            if (await _toDoRepository.CountActiveAsync(user.UserId, ct) >= _taskCountLimit)
                 throw new TaskCountLimitException(_taskCountLimit);
 
             if (toDoItemName.Length > _taskLengthLimit)
                 throw new TaskLengthLimitException(toDoItemName.Length, _taskLengthLimit);
 
-            if (_toDoRepository.ExistsByName(user.UserId, toDoItemName))
+            if (await _toDoRepository.ExistsByNameAsync(user.UserId, toDoItemName, ct))
             { 
                 throw new DuplicateTaskException(toDoItemName);
             }
 
             var newToDoItem = new ToDoItem(user, toDoItemName);
 
-            _toDoRepository.Add(newToDoItem);
+            await _toDoRepository.AddAsync(newToDoItem, ct);
             return newToDoItem;
         }
 
-        public void Delete(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
-            _toDoRepository.Delete(id);
+            await _toDoRepository.DeleteAsync(id, ct);
         }
 
-        public IReadOnlyList<ToDoItem> GetActiveByUserId(Guid userId)
+        public async Task<IReadOnlyList<ToDoItem>> GetActiveByUserIdAsync(Guid userId, CancellationToken ct)
         {
-            return _toDoRepository.GetActiveByUserId(userId);
+            return await _toDoRepository.GetActiveByUserIdAsync(userId, ct);
         }
 
-        public IReadOnlyList<ToDoItem> GetAllByUserId(Guid userId)
+        public async Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
         {
-            return _toDoRepository.GetAllByUserId(userId);
+            return await Task.Run(() => _toDoRepository.GetAllByUserIdAsync(userId, ct));
         }
 
-        public void MarkCompleted(Guid id)
+        public async Task MarkCompletedAsync(Guid id, CancellationToken ct)
         {
-            var toDoItem = _toDoRepository.Get(id);
+            var toDoItem = await _toDoRepository.GetAsync(id, ct);
             if (toDoItem != null)
             {
-                _toDoRepository.Update(toDoItem);
+                 _toDoRepository.Update(toDoItem);
             }
         }
 
@@ -78,9 +78,9 @@ namespace TelegramBot.Services
             throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
         }
 
-        public IReadOnlyList<ToDoItem> Find(ToDoUser user, string namePrefix)
+        public async Task<IReadOnlyList<ToDoItem>> FindAsync(ToDoUser user, string namePrefix, CancellationToken ct)
         {
-            return _toDoRepository.Find(user.UserId, x => x.Name.StartsWith(namePrefix));
+            return await Task.Run(() => _toDoRepository.FindAsync(user.UserId, x => x.Name.StartsWith(namePrefix), ct));
         }
     }
 

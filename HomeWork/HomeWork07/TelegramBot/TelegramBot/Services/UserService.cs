@@ -12,15 +12,15 @@ namespace TelegramBot.Services
         {
             userRepository = new InMemoryUserRepository();
         }
-        public ToDoUser? GetUser(long telegramUserId)
+        public async Task<ToDoUser?> GetUserAsync(long telegramUserId, CancellationToken ct)
         {
-            return userRepository.GetUserByTelegramUserId(telegramUserId);
+            return await Task.Run(() => userRepository.GetUserByTelegramUserIdAsync(telegramUserId, ct));
         }
 
-        public ToDoUser RegisterUser(long telegramUserId, string telegramUserName)
+        public async Task<ToDoUser> RegisterUserAsync(long telegramUserId, string telegramUserName, CancellationToken ct)
         {
             var user = new ToDoUser(telegramUserName, telegramUserId);
-            userRepository.Add(user);
+            await userRepository.AddAsync(user, ct);
             return user;
         }
     }

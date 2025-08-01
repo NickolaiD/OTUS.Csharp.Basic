@@ -16,20 +16,22 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             _toDoUsers = new List<ToDoUser>();
         }
-        public void Add(ToDoUser user)
+        public async Task AddAsync(ToDoUser user, CancellationToken ct)
         {
-            if (GetUserByTelegramUserId(user.TelegramUserId) == null )
-              _toDoUsers.Add(user);
+            if (await GetUserByTelegramUserIdAsync(user.TelegramUserId, ct) == null)
+            {
+                await Task.Run(() => _toDoUsers.Add(user));
+            }
         }
 
-        public ToDoUser? GetUser(Guid userId)
+        public async Task<ToDoUser?> GetUserAsync(Guid userId, CancellationToken ct)
         {
-            return _toDoUsers.Where(x => x.UserId == userId).FirstOrDefault();
+            return await Task.Run(() => _toDoUsers.Where(x => x.UserId == userId).FirstOrDefault());
         }
 
-        public ToDoUser? GetUserByTelegramUserId(long telegramUserId)
+        public async Task<ToDoUser?> GetUserByTelegramUserIdAsync(long telegramUserId, CancellationToken ct)
         {
-            return _toDoUsers.Where(x => x.TelegramUserId == telegramUserId).FirstOrDefault();
+            return await Task.Run(() => _toDoUsers.Where(x => x.TelegramUserId == telegramUserId).FirstOrDefault(), ct);
         }
     }
 }
