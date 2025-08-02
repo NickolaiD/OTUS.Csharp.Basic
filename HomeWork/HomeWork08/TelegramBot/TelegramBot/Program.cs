@@ -33,7 +33,19 @@ namespace TelegramBot
                 handler.SubscribeOnUpdateStarted(UpdateStarted);
                 handler.SubscribeOnUpdateCompleted(UpdateCompleted);
                 botClient.StartReceiving(handler, cancellationToken:cts.Token);
-                await Task.Delay(Timeout.Infinite, cts.Token);
+
+                var keyPressTask = Task.Run(() => KeyPress(botClient, cts.Token));
+
+                await Task.WhenAny(keyPressTask);
+                if (keyPressTask.IsCompleted)
+                {
+                    cts.Cancel();
+                    Console.WriteLine("\nЗавершение работы бота...");
+                }
+            }
+            catch (OperationCanceledException e)
+            {
+                ShowError("Бот остановлен");
             }
             catch (Exception ex)
             {
@@ -43,6 +55,26 @@ namespace TelegramBot
             {
                 handler.UnSubscribeOnUpdateStarted(UpdateStarted);
                 handler.UnSubscribeOnUpdateCompleted(UpdateCompleted);
+            }
+        }
+
+        private async static Task KeyPress(TelegramBotClient bot, CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                    var key = Console.ReadKey();
+                    if (key.Key == ConsoleKey.A)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        // Получаем информацию о боте при нажатии любой другой клавиши
+                        var me = await bot.GetMe();
+                        Console.WriteLine($"\nИнформация о боте: @{me.Username}, ID: {me.Id}");
+                        Console.WriteLine("Нажмите клавишу A для выхода");
+                    }
+                await Task.Delay(100);
             }
         }
         private static void ShowError(string message)
