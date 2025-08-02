@@ -1,4 +1,5 @@
-﻿using Otus.ToDoList.ConsoleBot;
+﻿using System.Threading.Tasks;
+using Telegram.Bot;
 using TelegramBot.Infrastructure.DataAccess;
 using TelegramBot.Services;
 
@@ -6,15 +7,20 @@ namespace TelegramBot
 {
     internal class Program
     {
-        static void Main()
+        static async Task Main()
         {
             Console.WriteLine("Введите максимально допустимое количество задач");
             var taskCountLimit = UpdateHandler.ParseAndValidateInt(Console.ReadLine(), 1, 100);
 
             Console.WriteLine("Введите максимально допустимую длину задачи");
             var taskLengthLimit = UpdateHandler.ParseAndValidateInt(Console.ReadLine(), 1, 100);
+            string token = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN", EnvironmentVariableTarget.User) ?? "";
+            var botClient = new TelegramBotClient(token);
 
-            var botClient = new ConsoleBotClient();
+            var ping = await botClient.GetMe();
+
+            Console.WriteLine($"Bot is alive - {ping.FirstName} {ping.Username}");
+
             var toDoRepository = new InMemoryToDoRepository();
             var cts = new CancellationTokenSource();
             var handler = new UpdateHandler(new UserService(),
@@ -26,7 +32,8 @@ namespace TelegramBot
             {
                 handler.SubscribeOnUpdateStarted(UpdateStarted);
                 handler.SubscribeOnUpdateCompleted(UpdateCompleted);
-                botClient.StartReceiving(handler, cts.Token);
+                botClient.StartReceiving(handler, cancellationToken:cts.Token);
+                await Task.Delay(Timeout.Infinite, cts.Token);
             }
             catch (Exception ex)
             {

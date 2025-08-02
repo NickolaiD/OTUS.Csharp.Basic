@@ -1,6 +1,7 @@
-﻿using Otus.ToDoList.ConsoleBot;
-using Otus.ToDoList.ConsoleBot.Types;
-using System.Threading;
+﻿using System.Threading;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
 using TelegramBot.Services;
@@ -36,22 +37,22 @@ namespace TelegramBot
 
             catch (ArgumentException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, ct);
+                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
             }
 
             catch (TaskCountLimitException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, ct);
+                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
             }
 
             catch (TaskLengthLimitException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, ct);
+                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
             }
 
             catch (DuplicateTaskException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, ct);
+                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
             }
 
             PublishOnUpdateCompleted(update.Message.Text);
@@ -68,7 +69,7 @@ namespace TelegramBot
             {
                 if ((userCommand != "/start") && (userCommand != "/help") && (userCommand != "/info"))
                 {
-                    await _botClient.SendMessage(botUpdate.Message.Chat, "Доступны команды /start, /help, /info", ct);
+                    await _botClient.SendMessage(botUpdate.Message.Chat, "Доступны команды /start, /help, /info", cancellationToken: ct);
                     return;
                 }
             }
@@ -133,7 +134,7 @@ namespace TelegramBot
                     return;
 
                 default:
-                    await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser)}", ct);
+                    await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser)}", cancellationToken: ct);
                     break;
             }
             return;
@@ -145,7 +146,7 @@ namespace TelegramBot
             if (_toDoUser == null) 
                 _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, ct);
 
-            await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", cancellationToken: ct);
         }
 
         private async Task CommandHelp(Update botUpdate, CancellationToken ct)
@@ -164,21 +165,21 @@ namespace TelegramBot
 /completetask - завершить активную задачу
 /removetask - удалить задачу из списка
 /exit - завершение работы"
-, ct
+, cancellationToken: ct
 );
         }
 
         private async Task CommandInfo(Update botUpdate, CancellationToken ct)
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser), ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput("Версия бота: 1.0, дата создания 20.05.2025", _toDoUser), cancellationToken: ct);
         }
 
         private async Task CommandAddTask(string parameter, Update botUpdate, CancellationToken ct)
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             await _toDoService.AddAsync(_toDoUser, parameter, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, "Задача добавлена", ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, "Задача добавлена", cancellationToken: ct);
         }
 
         private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
@@ -188,7 +189,7 @@ namespace TelegramBot
 
             if (userToDoItemList.Count == 0)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct);
                 return;
             }
             
@@ -197,11 +198,11 @@ namespace TelegramBot
                 if (toDoItem.Id.ToString() == parameter)
                 {
                     await _toDoService.MarkCompletedAsync(toDoItem.Id, ct);
-                    await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser), ct);
+                    await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", _toDoUser), cancellationToken: ct);
                     return;
                 }
             }
-            await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser), ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser), cancellationToken: ct);
         }
 
         private async Task CommandShowTasks(string parameter, Update botUpdate, CancellationToken ct)
@@ -219,14 +220,14 @@ namespace TelegramBot
             
             if (userToDoItemList.Count == 0)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct);
                 return;
             }
 
             int counter = 1;
             foreach (var toDoItem in userToDoItemList)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - {toDoItem.Id}", cancellationToken: ct);
                 counter++;
             }
         }
@@ -237,14 +238,14 @@ namespace TelegramBot
             var userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
             if (userToDoItemList.Count == 0)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct);
                 return;
             }
             
             int counter = 1;
             foreach (var toDoItem in userToDoItemList)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - {toDoItem.Id}", cancellationToken: ct);
                 counter++;
             }
         }
@@ -256,14 +257,14 @@ namespace TelegramBot
             
             if (userToDoItemList.Count == 0)
             {
-                await _botClient.SendMessage(botUpdate.Message.Chat, "Список задач пуст", ct);
+                await _botClient.SendMessage(botUpdate.Message.Chat, "Список задач пуст", cancellationToken: ct);
                 return;
             }
             
             var taskNoInt = ParseAndValidateInt(taskNo, 1, userToDoItemList.Count);
 
             await _toDoService.DeleteAsync(userToDoItemList[taskNoInt - 1].Id, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, $"Задача с номером {taskNoInt} удалена", ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, $"Задача с номером {taskNoInt} удалена", cancellationToken: ct);
         }
 
         private async Task CommandReport(Update botUpdate, CancellationToken ct)
@@ -271,13 +272,13 @@ namespace TelegramBot
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             var stats = await Task.Run(() => _toDoReportService.GetUserStatsAsync(toDoUser.UserId, ct));
             await _botClient.SendMessage(botUpdate.Message.Chat, 
-                $"Статистика по задачам на {stats.generatedAt}. Всего: {stats.total}; Завершенных: {stats.completed}; Активных: {stats.active}", ct);
+                $"Статистика по задачам на {stats.generatedAt}. Всего: {stats.total}; Завершенных: {stats.completed}; Активных: {stats.active}", cancellationToken: ct);
         }
 
         private async Task CommandExit(Update botUpdate, CancellationToken ct)
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Завершение работы.", _toDoUser)}", ct);
+            await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Завершение работы.", _toDoUser)}", cancellationToken: ct);
             Console.Read();
         }
 
@@ -297,7 +298,7 @@ namespace TelegramBot
             return result;
         }
 
-        public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken ct)
+        public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken ct)
         {
             Console.WriteLine($"HandleError: {exception})");
             return Task.CompletedTask;
@@ -310,6 +311,5 @@ namespace TelegramBot
 
         public void PublishOnUpdateStarted(string message) => OnHandleUpdateStarted.Invoke(message);
         public void PublishOnUpdateCompleted(string message) => OnHandleUpdateCompleted.Invoke(message);
-
     }
 }
