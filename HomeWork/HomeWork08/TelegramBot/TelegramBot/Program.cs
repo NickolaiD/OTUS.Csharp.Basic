@@ -1,5 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Infrastructure.DataAccess;
 using TelegramBot.Services;
 
@@ -16,6 +20,11 @@ namespace TelegramBot
             var taskLengthLimit = UpdateHandler.ParseAndValidateInt(Console.ReadLine(), 1, 100);
             string token = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN", EnvironmentVariableTarget.User) ?? "";
             var botClient = new TelegramBotClient(token);
+            var receiverOptions = new ReceiverOptions
+            {
+                AllowedUpdates = [UpdateType.Message],
+                DropPendingUpdates = true
+            };
 
             var ping = await botClient.GetMe();
 
@@ -32,7 +41,19 @@ namespace TelegramBot
             {
                 handler.SubscribeOnUpdateStarted(UpdateStarted);
                 handler.SubscribeOnUpdateCompleted(UpdateCompleted);
-                botClient.StartReceiving(handler, cancellationToken:cts.Token);
+
+                await botClient.SetMyCommands(
+                new[]
+                {
+                    new BotCommand { Command = "start", Description = "Запуск бота" },
+                    new BotCommand { Command = "help", Description = "Помощь" },
+                    new BotCommand { Command = "showalltasks", Description = "Список всех задач" },
+                    new BotCommand { Command = "showtasks", Description = "Список задач" },
+                    new BotCommand { Command = "report", Description = "Отчет" },
+                }, cancellationToken: cts.Token
+              );
+
+                botClient.StartReceiving(handler, receiverOptions, cancellationToken: cts.Token);
 
                 var keyPressTask = Task.Run(() => KeyPress(botClient, cts.Token));
 
@@ -62,18 +83,18 @@ namespace TelegramBot
         {
             while (!ct.IsCancellationRequested)
             {
-                    var key = Console.ReadKey();
-                    if (key.Key == ConsoleKey.A)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        // Получаем информацию о боте при нажатии любой другой клавиши
-                        var me = await bot.GetMe();
-                        Console.WriteLine($"\nИнформация о боте: @{me.Username}, ID: {me.Id}");
-                        Console.WriteLine("Нажмите клавишу A для выхода");
-                    }
+                var key = Console.ReadKey();
+                if (key.Key == ConsoleKey.A)
+                {
+                    return;
+                }
+                else
+                {
+                    // Получаем информацию о боте при нажатии любой другой клавиши
+                    var me = await bot.GetMe();
+                    Console.WriteLine($"\nИнформация о боте: @{me.Username}, ID: {me.Id}");
+                    Console.WriteLine("Нажмите клавишу A для выхода");
+                }
                 await Task.Delay(100);
             }
         }
