@@ -6,21 +6,22 @@ namespace TelegramBot.Services
 {
     internal class UserService : IUserService
     {
-        private readonly IUserRepository userRepository;
+        private readonly IUserRepository _userRepository;
 
         public UserService()
         {
-            userRepository = new InMemoryUserRepository();
+            //userRepository = new InMemoryUserRepository();
+            _userRepository = new FileUserRepository(Constants.BASE_DIR);
         }
         public async Task<ToDoUser?> GetUserAsync(long telegramUserId, CancellationToken ct)
         {
-            return await Task.Run(() => userRepository.GetUserByTelegramUserIdAsync(telegramUserId, ct));
+            return await Task.Run(() => _userRepository.GetUserByTelegramUserIdAsync(telegramUserId, ct));
         }
 
         public async Task<ToDoUser> RegisterUserAsync(long telegramUserId, string telegramUserName, CancellationToken ct)
         {
             var user = new ToDoUser(telegramUserName, telegramUserId);
-            await userRepository.AddAsync(user, ct);
+            await _userRepository.AddAsync(user, ct);
             return user;
         }
     }

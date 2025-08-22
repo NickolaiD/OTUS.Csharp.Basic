@@ -12,10 +12,6 @@ namespace TelegramBot.Infrastructure.DataAccess
         private readonly string _directoryName;
         public FileToDoRepository(string baseDirectoryName)
         {
-            if (string.IsNullOrEmpty(baseDirectoryName))
-            {
-                throw new ArgumentNullException("Задан пустой путь для хранения файлов");
-            }
             _directoryName = Path.Combine(baseDirectoryName, "ToDoItems");
             if (!Directory.Exists(_directoryName))
             {
@@ -24,7 +20,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public async Task AddAsync(ToDoItem item, CancellationToken ct)
         {
-             string userDirectory = Path.Combine(_directoryName, item.User.UserId.ToString());
+            string userDirectory = Path.Combine(_directoryName, item.User.UserId.ToString());
             if (!Directory.Exists(userDirectory))
             {
                 Directory.CreateDirectory(userDirectory);
@@ -73,7 +69,7 @@ namespace TelegramBot.Infrastructure.DataAccess
 
         public async Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
         {
-            List<ToDoItem> toDoItemList = new List<ToDoItem>();
+            var toDoItemList = new List<ToDoItem>();
             string userDirectory = Path.Combine(_directoryName, userId.ToString());
             if (Directory.Exists(userDirectory))
             {
