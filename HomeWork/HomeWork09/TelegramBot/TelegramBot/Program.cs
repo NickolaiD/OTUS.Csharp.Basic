@@ -30,7 +30,8 @@ namespace TelegramBot
 
             Console.WriteLine($"Bot is alive - {ping.FirstName} {ping.Username}");
 
-            var toDoRepository = new InMemoryToDoRepository();
+            //var toDoRepository = new InMemoryToDoRepository();
+            var toDoRepository = new FileToDoRepository(Path.Combine("D:","TgBot"));
             var cts = new CancellationTokenSource();
             var handler = new UpdateHandler(new UserService(),
                                             botClient,
