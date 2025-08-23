@@ -2,10 +2,10 @@
 {
     internal class ToDoItem
     {
-        public Guid Id { get; }
-        public ToDoUser User { get; }
-        public string Name { get; }
-        public DateTime CreatedAt { get; }
+        public Guid Id { get; init; }
+        public ToDoUser User { get; init; }
+        public string Name { get; init; }
+        public DateTime CreatedAt { get; init; }
         public ToDoItemState State { get; set; }
         public DateTime? StateChangedAt { get; set; }
 
@@ -17,6 +17,6 @@
             User = user;
             Name = name;
         }
-
+        public ToDoItem() { }
     }
 }
