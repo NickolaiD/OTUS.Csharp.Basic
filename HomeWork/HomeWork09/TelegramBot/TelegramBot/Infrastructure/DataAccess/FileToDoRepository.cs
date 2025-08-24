@@ -26,7 +26,6 @@ namespace TelegramBot.Infrastructure.DataAccess
             
             if (!File.Exists(_indexFileName)) 
             {
-                //using var fileCreator = File.Create(_indexFileName);
                 var fileIndex = new FileIndex();
 
                 var userDirectoryName = Path.Combine(baseDirectoryName, "ToDoItems");
@@ -156,11 +155,14 @@ namespace TelegramBot.Infrastructure.DataAccess
                     toDoItem = JsonSerializer.Deserialize<ToDoItem>(reader);
                 }
 
-                toDoItem.State = ToDoItemState.Completed;
-                toDoItem.StateChangedAt = DateTime.Now;
+                if (toDoItem != null)
+                {
+                    toDoItem.State = ToDoItemState.Completed;
+                    toDoItem.StateChangedAt = DateTime.Now;
 
-                using var writer = File.Create(fileName);
-                JsonSerializer.Serialize(writer, toDoItem);
+                    using var writer = File.Create(fileName);
+                    JsonSerializer.Serialize(writer, toDoItem);
+                }
             }
 
         }
