@@ -26,7 +26,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             
             if (!File.Exists(_indexFileName)) 
             {
-                var fileIndex = new FileIndex();
+                var fileIndex = new List<IndexItem>();
 
                 var userDirectoryName = Path.Combine(baseDirectoryName, "ToDoItems");
                 var userFolders = Directory.EnumerateDirectories(userDirectoryName);
@@ -72,14 +72,14 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
 
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
-            return await Task.Run(() => toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).Count());
+            return toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).Count();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
             var fileIndex = await GetFileIndexList(ct);
 
-            var fileItem = fileIndex.Items.Where(x => x.ToDoItemId == id).FirstOrDefault();
+            var fileItem = fileIndex.Where(x => x.ToDoItemId == id).FirstOrDefault();
             if (fileItem != null)
             {
                 var fileNameToDel = Path.Combine(_directoryName, fileItem.UserId.ToString(), $"{fileItem.ToDoItemId}.json");
@@ -88,7 +88,7 @@ namespace TelegramBot.Infrastructure.DataAccess
                     File.Delete(fileNameToDel);
                 }
                 
-                fileIndex.Delete(id);
+                fileIndex.RemoveAll(x => x.ToDoItemId == id);
                 using var writerIndex = File.Create(_indexFileName);
                 await JsonSerializer.SerializeAsync(writerIndex, fileIndex, cancellationToken: ct);
             }
@@ -97,13 +97,13 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<bool> ExistsByNameAsync(Guid userId, string name, CancellationToken ct)
         {
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
-            return await Task.Run(() => toDoItemList.Where(x => x.User.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0);
+            return toDoItemList.Where(x => x.User.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0;
         }
 
         public async Task<ToDoItem?> GetAsync(Guid id, CancellationToken ct)
         {
             var fileIndex = await GetFileIndexList(ct);
-            var fileItem = fileIndex.Items.Where(x => x.ToDoItemId == id).FirstOrDefault();
+            var fileItem = fileIndex.Where(x => x.ToDoItemId == id).FirstOrDefault();
             ToDoItem? toDoItem = null;
 
             if (fileItem != null)
@@ -121,8 +121,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetActiveByUserIdAsync(Guid userId, CancellationToken ct)
         {
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
-            return await Task.Run(() => toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).ToList());
-            throw new NotImplementedException();
+            return toDoItemList.Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).ToList();
         }
 
         public async Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
@@ -169,24 +168,24 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> FindAsync(Guid userId, Func<ToDoItem, bool> predicate, CancellationToken ct)
         {
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
-            return await Task.Run(() => toDoItemList.Where(x => x.User.UserId == userId).Where(predicate).ToList());
+            return toDoItemList.Where(x => x.User.UserId == userId).Where(predicate).ToList();
         }
-        public async Task<FileIndex> GetFileIndexList(CancellationToken ct)
+        public async Task<List<IndexItem>> GetFileIndexList(CancellationToken ct)
         {
-            FileIndex? fileIndex;
+            List<IndexItem>? fileIndex;
 
             if (new FileInfo(_indexFileName).Length != 0)
             {
                 using var readerIndex = File.OpenRead(_indexFileName);
-                fileIndex = await JsonSerializer.DeserializeAsync<FileIndex>(readerIndex, cancellationToken: ct);
+                fileIndex = await JsonSerializer.DeserializeAsync<List<IndexItem>>(readerIndex, cancellationToken: ct);
                 if (fileIndex == null)
                 {
-                    return new FileIndex();
+                    return new List<IndexItem>();
                 }
             }
             else
             {
-                return new FileIndex();
+                return new List<IndexItem>();
             }
             return fileIndex;
         }
