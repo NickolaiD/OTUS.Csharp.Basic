@@ -200,10 +200,6 @@ namespace TelegramBot
         private async Task CommandAddTask(string parameter, Update botUpdate, CancellationToken ct)
         {
             await ProcessScenario(new ScenarioContext(ScenarioType.AddTask), botUpdate, ct);
-
-            //var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            //await _toDoService.AddAsync(_toDoUser, parameter, ct);
-            
         }
 
         private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
