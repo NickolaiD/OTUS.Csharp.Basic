@@ -2,10 +2,10 @@
 {
     internal class ToDoUser
     {
-        public Guid UserId { get; }
-        public string TelegramUserName { get;}
-        public DateTime RegisteredAt { get; }
-        public long TelegramUserId { get; }
+        public Guid UserId { get; init; }
+        public string TelegramUserName { get; init; }
+        public DateTime RegisteredAt { get; init; }
+        public long TelegramUserId { get; init; }
         public ToDoUser(string telegramUserName, long telegramUserId)
         {
             UserId = Guid.NewGuid();
@@ -13,6 +13,7 @@
             TelegramUserName = telegramUserName;
             TelegramUserId = telegramUserId;
         }
+        public ToDoUser() { }
 
     }
 }

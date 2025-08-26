@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TelegramBot.Core.DataAccess;
 using TelegramBot.Infrastructure.DataAccess;
 
 namespace TelegramBot.Services
 {
     internal class ToDoReportService : IToDoReportService
     {
-        private readonly InMemoryToDoRepository _toDoRepository;
-        public ToDoReportService(InMemoryToDoRepository toDoRepository)
+        private readonly IToDoRepository _toDoRepository;
+        public ToDoReportService(IToDoRepository toDoRepository)
         {
             _toDoRepository = toDoRepository;
         }
