@@ -11,7 +11,7 @@ namespace TelegramBot.Services
         public UserService()
         {
             //userRepository = new InMemoryUserRepository();
-            _userRepository = new FileUserRepository(Constants.BASE_DIR);
+            _userRepository = new FileUserRepository(BotHelper.BASE_DIR);
         }
         public async Task<ToDoUser?> GetUserAsync(long telegramUserId, CancellationToken ct)
         {

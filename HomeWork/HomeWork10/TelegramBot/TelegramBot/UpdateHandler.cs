@@ -5,7 +5,9 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
+using TelegramBot.Scenarios;
 using TelegramBot.Services;
+using static TelegramBot.BotHelper;
 
 namespace TelegramBot
 {
@@ -16,24 +18,40 @@ namespace TelegramBot
         private readonly ITelegramBotClient _botClient;
         private readonly IToDoService _toDoService;
         private readonly IToDoReportService _toDoReportService;
+        private readonly IEnumerable<IScenario> _scenarios;
+        private readonly IScenarioContextRepository _contextRepository;
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
-        public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService, IToDoReportService toDoReportService)
+        public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService, IToDoReportService toDoReportService, IEnumerable<IScenario> scenarios, IScenarioContextRepository contextRepository)
         {
             _userService = userService;
             _botClient = botClient;
             _toDoService = toDoService;
             _toDoReportService = toDoReportService;
+            _scenarios = scenarios;
+            _contextRepository = contextRepository;
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             PublishOnUpdateStarted(update.Message.Text);
-            
+
             try
             {
-                
+                var context = await _contextRepository.GetContext(update.Message.From.Id, ct);
+                if (context != null)
+                {
+                    if (update.Message.Text == "/cancel")
+                    {
+                        await _contextRepository.ResetContext(update.Message.From.Id, ct);
+                        await _botClient.SendMessage(update.Message.Chat, "Действие отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        return;
+                    }
+                    await ProcessScenario(context, update, ct);
+                    return;
+                }
+
                 await ExecuteCommand(update, ct);
             }
 
@@ -150,7 +168,6 @@ namespace TelegramBot
                 _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, ct);
 
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-
         }
 
         private async Task CommandHelp(Update botUpdate, CancellationToken ct, bool userRegistered)
@@ -168,6 +185,7 @@ namespace TelegramBot
 /report - статистика по задачам
 /completetask - завершить активную задачу
 /removetask - удалить задачу из списка
+/cancel - отменить действие
 /exit - завершение работы"
 , cancellationToken: ct, replyMarkup: GetKeyboardButtons(userRegistered)
 );
@@ -181,9 +199,11 @@ namespace TelegramBot
 
         private async Task CommandAddTask(string parameter, Update botUpdate, CancellationToken ct)
         {
-            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            await _toDoService.AddAsync(_toDoUser, parameter, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, "Задача добавлена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+            await ProcessScenario(new ScenarioContext(ScenarioType.AddTask), botUpdate, ct);
+
+            //var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
+            //await _toDoService.AddAsync(_toDoUser, parameter, ct);
+            
         }
 
         private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
@@ -315,34 +335,31 @@ namespace TelegramBot
 
         public void PublishOnUpdateStarted(string message) => OnHandleUpdateStarted.Invoke(message);
         public void PublishOnUpdateCompleted(string message) => OnHandleUpdateCompleted.Invoke(message);
-
-        private ReplyKeyboardMarkup GetKeyboardButtons(bool userRegistered)
+        private IScenario GetScenario(ScenarioType scenario)
         {
-            if (userRegistered)
+
+            foreach (var item in _scenarios)
             {
-                ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
-                {
-                new KeyboardButton[] { "/showalltasks", "/showtasks", "/report" },
-            })
-                {
-                    ResizeKeyboard = true
-                };
+                if (item.CanHandle(scenario))
+                    return item;
+            }
+            throw new Exception("Сценарий не найден");
+        }
 
-                return replyKeyboardMarkup;
-
+        private async Task ProcessScenario(ScenarioContext context, Update update, CancellationToken ct)
+        {
+            var scenario = GetScenario(context.CurrentScenario);
+            var result = await scenario.HandleMessageAsync(_botClient, context, update, ct);
+            if (result == ScenarioResult.Completed)
+            {
+                await _contextRepository.ResetContext(update.Message.From.Id, ct);
             }
             else
             {
-                ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
-                {
-                new KeyboardButton[] { "/start" },
-            })
-                {
-                    ResizeKeyboard = true
-                };
-
-                return replyKeyboardMarkup;
+                await _contextRepository.ResetContext(update.Message.From.Id, ct);
+                await _contextRepository.SetContext(update.Message.From.Id, context, ct);
             }
+            
         }
     }
 }
