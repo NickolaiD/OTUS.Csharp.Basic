@@ -9,8 +9,9 @@
         public ToDoItemState State { get; set; }
         public DateTime? StateChangedAt { get; set; }
         public DateTime Deadline { get; set; }
+        public ToDoList? List { get; }
 
-        public ToDoItem(ToDoUser user, string name, DateTime deadline)
+        public ToDoItem(ToDoUser user, string name, DateTime deadline, ToDoList? list)
         {
             Id = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
@@ -18,6 +19,7 @@
             User = user;
             Name = name;
             Deadline = deadline;
+            List = list;
         }
         public ToDoItem() { }
     }
