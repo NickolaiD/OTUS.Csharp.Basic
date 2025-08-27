@@ -17,7 +17,7 @@ namespace TelegramBot.Services
             _toDoRepository = toDoRepository;
         }
 
-        public async Task<ToDoItem> AddAsync(ToDoUser user, string toDoItemName, CancellationToken ct)
+        public async Task<ToDoItem> AddAsync(ToDoUser user, string toDoItemName, DateTime deadline, CancellationToken ct)
         {
             ValidateString(toDoItemName);
 
@@ -32,7 +32,7 @@ namespace TelegramBot.Services
                 throw new DuplicateTaskException(toDoItemName);
             }
 
-            var newToDoItem = new ToDoItem(user, toDoItemName);
+            var newToDoItem = new ToDoItem(user, toDoItemName, deadline);
 
             await _toDoRepository.AddAsync(newToDoItem, ct);
             return newToDoItem;
