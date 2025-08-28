@@ -51,5 +51,19 @@ namespace TelegramBot
 
                 return replyKeyboardMarkup;
         }
+        public static void ValidateString(string? str)
+        {
+            if (!string.IsNullOrEmpty(str))
+            {
+                foreach (var item in str)
+                {
+                    if (!char.IsWhiteSpace(item))
+                    {
+                        return;
+                    }
+                }
+            }
+            throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
+        }
     }
 }

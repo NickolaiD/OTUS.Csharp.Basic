@@ -50,7 +50,7 @@ namespace TelegramBot.Scenarios
                     toDoItemName = (string)context.Data.GetValueOrDefault("Date");
                     if (DateTime.TryParse(update.Message.Text, out DateTime toDoDate))
                     {
-                        await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, ct);
+                        await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, null, ct);
                         await bot.SendMessage(update.Message.Chat, "Задача добавлена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                         return ScenarioResult.Completed;
                     }
