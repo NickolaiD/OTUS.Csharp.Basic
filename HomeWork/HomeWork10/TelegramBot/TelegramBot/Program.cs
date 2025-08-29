@@ -5,6 +5,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Infrastructure.DataAccess;
+using TelegramBot.Scenarios;
 using TelegramBot.Services;
 
 namespace TelegramBot
@@ -31,12 +32,16 @@ namespace TelegramBot
             Console.WriteLine($"Bot is alive - {ping.FirstName} {ping.Username}");
 
             //var toDoRepository = new InMemoryToDoRepository();
-            var toDoRepository = new FileToDoRepository(Constants.BASE_DIR);
+            var toDoRepository = new FileToDoRepository(BotHelper.BASE_DIR);
             var cts = new CancellationTokenSource();
-            var handler = new UpdateHandler(new UserService(),
-                                            botClient,
-                                            new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository),
-                                            new ToDoReportService(toDoRepository));
+            var userService = new UserService();
+            var toDoService = new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository);
+
+            var scenarioList = new List<IScenario>();
+            scenarioList.Add(new AddTaskScenario(userService, toDoService));
+
+            var handler = new UpdateHandler(userService, botClient, toDoService,
+                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository());
 
             try
             {
