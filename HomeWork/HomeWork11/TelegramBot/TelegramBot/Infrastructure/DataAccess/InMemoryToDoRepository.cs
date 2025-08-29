@@ -64,5 +64,10 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             return await Task.Run(() => _toDoItemList.Where(x => x.User.UserId == userId).Where(predicate).ToList());
         }
+
+        public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct)
+        {
+            return await Task.Run(() => _toDoItemList.Where(x => x.User.UserId == userId && x.List.Id == listId).ToList());
+        }
     }
 }

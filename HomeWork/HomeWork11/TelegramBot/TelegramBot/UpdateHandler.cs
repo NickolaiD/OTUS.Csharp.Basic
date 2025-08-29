@@ -20,10 +20,17 @@ namespace TelegramBot
         private readonly IToDoReportService _toDoReportService;
         private readonly IEnumerable<IScenario> _scenarios;
         private readonly IScenarioContextRepository _contextRepository;
+        private readonly IToDoListService _toDoListService;
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
-        public UpdateHandler(IUserService userService, ITelegramBotClient botClient, IToDoService toDoService, IToDoReportService toDoReportService, IEnumerable<IScenario> scenarios, IScenarioContextRepository contextRepository)
+        public UpdateHandler(IUserService userService, 
+                             ITelegramBotClient botClient,
+                             IToDoService toDoService,
+                             IToDoReportService toDoReportService,
+                             IEnumerable<IScenario> scenarios,
+                             IScenarioContextRepository contextRepository,
+                             IToDoListService toDoListService)
         {
             _userService = userService;
             _botClient = botClient;
@@ -31,6 +38,7 @@ namespace TelegramBot
             _toDoReportService = toDoReportService;
             _scenarios = scenarios;
             _contextRepository = contextRepository;
+            _toDoListService = toDoListService;
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
         {
@@ -131,14 +139,10 @@ namespace TelegramBot
                     await CommandCompleteTask(parameter, botUpdate, ct);
                     break;
 
-                case "/showtasks":
-                      await CommandShowTasks(parameter, botUpdate, ct);
+                case "/show":
+                      await CommandShow(parameter, botUpdate, ct);
                     break;
-
-                case "/showalltasks":
-                    await CommandShowAllTasks(botUpdate, ct);
-                    break;
-
+                
                 case "/removetask":
                     await CommandRemoveTask(parameter, botUpdate, ct);
                     break;
@@ -147,7 +151,7 @@ namespace TelegramBot
                     await CommandReport(botUpdate, ct);
                     break;
                 case "/find":
-                    await CommandShowTasks(parameter, botUpdate, ct);
+                    await CommandShow(parameter, botUpdate, ct);
                     break;
 
                 case "/exit":
@@ -179,8 +183,7 @@ namespace TelegramBot
 /help - справочная информация
 /info - информация о версии программы и дате её создания
 /addtask - добавить задачу в список
-/showtasks - показать список активных задач
-/showalltasks - показать список всех задач
+/show - показать список активных задач
 /find - показать список задач по фильтру
 /report - статистика по задачам
 /completetask - завершить активную задачу
@@ -225,7 +228,7 @@ namespace TelegramBot
             await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", _toDoUser), cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
         }
 
-        private async Task CommandShowTasks(string parameter, Update botUpdate, CancellationToken ct)
+        private async Task CommandShow(string parameter, Update botUpdate, CancellationToken ct)
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             IReadOnlyList<ToDoItem> userToDoItemList;
@@ -251,25 +254,6 @@ namespace TelegramBot
                 counter++;
             }
         }
-
-        private async Task CommandShowAllTasks(Update botUpdate, CancellationToken ct)
-        {
-            var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(_toDoUser.UserId, ct);
-            if (userToDoItemList.Count == 0)
-            {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                return;
-            }
-            
-            int counter = 1;
-            foreach (var toDoItem in userToDoItemList)
-            {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.State} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                counter++;
-            }
-        }
-
         private async Task CommandRemoveTask(string taskNo, Update botUpdate, CancellationToken ct)
         {
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);

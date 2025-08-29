@@ -41,7 +41,7 @@ namespace TelegramBot
             scenarioList.Add(new AddTaskScenario(userService, toDoService));
 
             var handler = new UpdateHandler(userService, botClient, toDoService,
-                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository());
+                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository(), new ToDoListService());
 
             try
             {

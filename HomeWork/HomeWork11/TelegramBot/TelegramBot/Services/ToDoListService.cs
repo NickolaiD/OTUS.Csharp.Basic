@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 using TelegramBot.Core.DataAccess;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
+using TelegramBot.Infrastructure.DataAccess;
 
 namespace TelegramBot.Services
 {
     public class ToDoListService : IToDoListService
     {
         private IToDoListRepository _toDoListRepository;
-        public ToDoListService(IToDoListRepository toDoListRepository) 
-        { 
-            _toDoListRepository = toDoListRepository;
+        public ToDoListService() 
+        {
+            _toDoListRepository = new FileToDoListRepository(BotHelper.BASE_DIR);
         }
         public async Task<ToDoList> Add(ToDoUser user, string name, CancellationToken ct)
         {

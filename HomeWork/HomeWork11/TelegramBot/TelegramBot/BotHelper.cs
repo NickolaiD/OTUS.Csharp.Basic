@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot
@@ -64,6 +65,24 @@ namespace TelegramBot
                 }
             }
             throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
+        }
+        public static InlineKeyboardMarkup Test()
+        {
+            var replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
+{
+    new[]
+    {
+        InlineKeyboardButton.WithCallbackData("✅ Выполнить", "complete_123"),
+        InlineKeyboardButton.WithCallbackData("❌ Удалить", "delete_123")
+    },
+    new[]
+    {
+        InlineKeyboardButton.WithCallbackData("📝 Редактировать", "edit_123"),
+        InlineKeyboardButton.WithCallbackData("⏰ Отложить", "delay_123")
+    }
+});
+
+            return replyKeyboardMarkup;
         }
     }
 }
