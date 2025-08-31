@@ -11,14 +11,15 @@ namespace TelegramBot.Dto
         public Guid? ToDoListId { get; private set; }
         public static new ToDoListCallbackDto FromString(string input)
         {
-
-            //На вход принимает строку ввида "{action}|{toDoListId}|{prop2}...".
-            //Нужно создать ToDoListCallbackDto с Action = action и ToDoListId = toDoListId.
-
             var stringArray = input.Split('|');
-
-            Guid.TryParse(stringArray[1], out var guid);
-            return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = guid };
+            if (Guid.TryParse(stringArray[1], out var guid))
+            {
+                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = guid };
+            }
+            else
+            {
+                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = Guid.Empty };
+            }
         }
         public override string ToString() 
         {

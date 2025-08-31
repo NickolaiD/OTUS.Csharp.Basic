@@ -37,20 +37,20 @@ namespace TelegramBot.Scenarios
                 case null:
                     toDoUser = await _userService.GetUserAsync(update.Message.From.Id, ct);
                     context.CurrentStep = "Name";
-                    context.Data.Add(context.CurrentStep, toDoUser);
+                    context.Data.Add("User", toDoUser);
                     await bot.SendMessage(update.Message.Chat, "Введите название задачи:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     return ScenarioResult.Transition;
                 case "Name":
-                    context.CurrentStep = "Date";
                     context.Data.Add(context.CurrentStep, update.Message.Text);  //Date -> Название задачи
+                    context.CurrentStep = "Date";
                     await bot.SendMessage(update.Message.Chat, "Введите срок выполнения:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     return ScenarioResult.Transition;
                 case "Date":
-                    toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("Name");
-                    toDoItemName = (string)context.Data.GetValueOrDefault("Date");
+                    toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
+                    toDoItemName = (string)context.Data.GetValueOrDefault("Name");
                     if (DateTime.TryParse(update.Message.Text, out DateTime toDoDate))
                     {
-                        await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, null, ct);
+                        await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, null, ct);  //!!!!!!!!!!!!!!!!!!!!
                         await bot.SendMessage(update.Message.Chat, "Задача добавлена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                         return ScenarioResult.Completed;
                     }
@@ -60,8 +60,8 @@ namespace TelegramBot.Scenarios
                         return ScenarioResult.Transition;
                     }
 
-                        default:
-                    throw new Exception($"Нет case для шага {context.CurrentStep}");
+                default:
+                    throw new NotSupportedException($"Нет case для шага {context.CurrentStep}");
             }
             
 

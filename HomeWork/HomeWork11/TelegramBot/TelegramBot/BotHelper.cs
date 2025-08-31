@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Dto;
+using TelegramBot.Entities;
 
 namespace TelegramBot
 {
@@ -72,13 +74,12 @@ namespace TelegramBot
 {
     new[]
     {
-        InlineKeyboardButton.WithCallbackData("✅ Выполнить", "complete_123"),
-        InlineKeyboardButton.WithCallbackData("❌ Удалить", "delete_123")
+        InlineKeyboardButton.WithCallbackData("📌Без списка", "show|null")
     },
     new[]
     {
-        InlineKeyboardButton.WithCallbackData("📝 Редактировать", "edit_123"),
-        InlineKeyboardButton.WithCallbackData("⏰ Отложить", "delay_123")
+        InlineKeyboardButton.WithCallbackData("🆕Добавить", "addlist"),
+        InlineKeyboardButton.WithCallbackData("❌Удалить", "deletelist")
     }
 });
 

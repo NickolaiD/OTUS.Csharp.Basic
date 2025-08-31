@@ -67,7 +67,7 @@ namespace TelegramBot.Services
             return await Task.Run(() => _toDoRepository.FindAsync(user.UserId, x => x.Name.StartsWith(namePrefix), ct));
         }
 
-        public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct)
+        public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndListAsync(Guid userId, Guid? listId, CancellationToken ct)
         {
             return await Task.Run(() => _toDoRepository.GetByUserIdAndList(userId, listId, ct));
         }

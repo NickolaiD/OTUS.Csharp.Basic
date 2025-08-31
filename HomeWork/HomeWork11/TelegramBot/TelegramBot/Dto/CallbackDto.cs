@@ -25,7 +25,6 @@ namespace TelegramBot.Dto
                 return new CallbackDto { Action = input };
             }
         }
-
         public override string ToString() {  return Action; }
     }
 }

@@ -192,7 +192,14 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct)
         {
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
-            return toDoItemList.Where(x => x.User.UserId == userId && x.List.Id == listId).ToList();
+            if (listId == Guid.Empty)
+            {
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List == null && x.State == ToDoItemState.Active).ToList();
+            }
+            else
+            {
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List.Id == listId && x.State == ToDoItemState.Active).ToList();
+            }
         }
 
     }

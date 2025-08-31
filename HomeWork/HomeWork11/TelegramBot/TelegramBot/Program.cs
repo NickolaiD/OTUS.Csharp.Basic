@@ -23,8 +23,9 @@ namespace TelegramBot
             var botClient = new TelegramBotClient(token);
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = [UpdateType.Message],
-                DropPendingUpdates = true
+                AllowedUpdates = [UpdateType.Message, UpdateType.CallbackQuery],
+                DropPendingUpdates = true,
+
             };
 
             var ping = await botClient.GetMe();
