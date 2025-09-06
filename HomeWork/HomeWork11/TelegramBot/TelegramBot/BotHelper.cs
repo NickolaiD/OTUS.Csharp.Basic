@@ -68,22 +68,5 @@ namespace TelegramBot
             }
             throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
         }
-        public static InlineKeyboardMarkup Test()
-        {
-            var replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
-{
-    new[]
-    {
-        InlineKeyboardButton.WithCallbackData("📌Без списка", "show|null")
-    },
-    new[]
-    {
-        InlineKeyboardButton.WithCallbackData("🆕Добавить", "addlist"),
-        InlineKeyboardButton.WithCallbackData("❌Удалить", "deletelist")
-    }
-});
-
-            return replyKeyboardMarkup;
-        }
     }
 }

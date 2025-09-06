@@ -198,7 +198,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             }
             else
             {
-                return toDoItemList.Where(x => x.User.UserId == userId && x.List.Id == listId && x.State == ToDoItemState.Active).ToList();
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List != null && x.State == ToDoItemState.Active).Where(x => x.List.Id == listId).ToList();
             }
         }
 

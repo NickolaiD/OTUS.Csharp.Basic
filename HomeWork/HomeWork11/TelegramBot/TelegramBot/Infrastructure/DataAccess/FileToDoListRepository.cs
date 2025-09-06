@@ -36,7 +36,7 @@ namespace TelegramBot.Infrastructure.DataAccess
 
             if (fileItem != null)
             {
-                var fileNameToDel = Path.Combine(_directoryName, fileItem.Id.ToString(), $"{fileItem.Id}.json");
+                var fileNameToDel = Path.Combine(_directoryName, $"{fileItem.Id}.json");
                 if (File.Exists(fileNameToDel))
                 {
                     File.Delete(fileNameToDel);

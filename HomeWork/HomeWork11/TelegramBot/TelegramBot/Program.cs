@@ -37,9 +37,12 @@ namespace TelegramBot
             var cts = new CancellationTokenSource();
             var userService = new UserService();
             var toDoService = new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository);
+            var toDoListService = new ToDoListService();
 
             var scenarioList = new List<IScenario>();
             scenarioList.Add(new AddTaskScenario(userService, toDoService));
+            scenarioList.Add(new AddListScenario(userService, toDoListService));
+            scenarioList.Add(new DeleteListScenario(userService, toDoListService, toDoService));
 
             var handler = new UpdateHandler(userService, botClient, toDoService,
                                             new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository(), new ToDoListService());
