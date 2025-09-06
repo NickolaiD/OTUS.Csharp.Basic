@@ -46,6 +46,11 @@ namespace TelegramBot.Scenarios
                     context.Data.Add("User", toDoUser);
                     
                     var toDoLists = await _toDoListService.GetUserLists(toDoUser.UserId, ct);
+                    if (toDoLists.Count == 0)
+                    {
+                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Нет списков для удаления", cancellationToken: ct, replyMarkup: BotHelper.GetKeyboardButtons(true));
+                        return ScenarioResult.Completed;
+                    }
                     var listButtons = new List<InlineKeyboardButton>();
                     foreach (var list in toDoLists)
                     {

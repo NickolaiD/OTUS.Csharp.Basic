@@ -19,7 +19,7 @@ namespace TelegramBot
             {
                 ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
                 {
-                new KeyboardButton[] { "/addtask", "/showalltasks", "/showtasks", "/report" },
+                new KeyboardButton[] { "/addtask", "/show", "/report" },
             })
                 {
                     ResizeKeyboard = true

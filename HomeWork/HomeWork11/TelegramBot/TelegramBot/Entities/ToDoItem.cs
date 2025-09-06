@@ -9,7 +9,7 @@
         public ToDoItemState State { get; set; }
         public DateTime? StateChangedAt { get; set; }
         public DateTime Deadline { get; set; }
-        public ToDoList? List { get; }
+        public ToDoList? List { get; init; }
 
         public ToDoItem(ToDoUser user, string name, DateTime deadline, ToDoList? list)
         {

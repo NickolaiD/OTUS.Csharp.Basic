@@ -40,7 +40,7 @@ namespace TelegramBot
             var toDoListService = new ToDoListService();
 
             var scenarioList = new List<IScenario>();
-            scenarioList.Add(new AddTaskScenario(userService, toDoService));
+            scenarioList.Add(new AddTaskScenario(userService, toDoService, toDoListService));
             scenarioList.Add(new AddListScenario(userService, toDoListService));
             scenarioList.Add(new DeleteListScenario(userService, toDoListService, toDoService));
 
@@ -57,8 +57,7 @@ namespace TelegramBot
                 {
                     new BotCommand { Command = "start", Description = "Запуск бота" },
                     new BotCommand { Command = "help", Description = "Помощь" },
-                    new BotCommand { Command = "showalltasks", Description = "Список всех задач" },
-                    new BotCommand { Command = "showtasks", Description = "Список задач" },
+                    new BotCommand { Command = "show", Description = "Список задач" },
                     new BotCommand { Command = "report", Description = "Отчет" },
                 }, cancellationToken: cts.Token
               );
