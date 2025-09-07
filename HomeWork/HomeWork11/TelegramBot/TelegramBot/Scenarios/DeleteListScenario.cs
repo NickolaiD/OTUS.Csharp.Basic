@@ -86,7 +86,7 @@ namespace TelegramBot.Scenarios
                     return ScenarioResult.Transition;
                 case "Delete":
                     callback = CallbackDto.FromString(update.CallbackQuery.Data);
-                    if (callback.Action == "yes")
+                    if (callback.Action.Equals("yes"))
                     {
                         toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                         toDoList = (ToDoList?)context.Data.GetValueOrDefault("toDoList");
@@ -98,8 +98,9 @@ namespace TelegramBot.Scenarios
                         }
 
                         await _toDoListService.Delete(toDoList.Id, ct);
+                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Список удален", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }
-                    else if (callback.Action == "no")
+                    else if (callback.Action.Equals("no"))
                     {
                         await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Удаление отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }

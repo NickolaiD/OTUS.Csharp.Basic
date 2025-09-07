@@ -43,6 +43,7 @@ namespace TelegramBot.Scenarios
                 case "Name":
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                     await _toDoListService.Add(toDoUser, update.Message.Text, ct);
+                    await bot.SendMessage(update.Message.Chat.Id, "Список добавлен", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     return ScenarioResult.Completed;
                 default:
                     throw new NotSupportedException($"Нет case для шага {context.CurrentStep}");

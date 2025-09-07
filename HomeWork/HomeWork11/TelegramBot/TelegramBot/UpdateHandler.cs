@@ -63,17 +63,26 @@ namespace TelegramBot
 
             catch (TaskCountLimitException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
+                if (update.Message != null)
+                    await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                else if (update.CallbackQuery != null)
+                    await botClient.SendMessage(update.CallbackQuery.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
             }
 
             catch (TaskLengthLimitException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
+                if (update.Message != null)
+                    await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                else if (update.CallbackQuery != null)
+                    await botClient.SendMessage(update.CallbackQuery.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
             }
 
             catch (DuplicateTaskException ex)
             {
-                await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct);
+                if (update.Message != null)
+                  await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                else if (update.CallbackQuery != null)
+                    await botClient.SendMessage(update.CallbackQuery.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
             }
         }
         private async Task OnMessage(Update update, CancellationToken ct)
