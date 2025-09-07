@@ -41,7 +41,6 @@ namespace TelegramBot.Scenarios
                     await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Введите название списка:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     return ScenarioResult.Transition;
                 case "Name":
-                    //toDoUser = await _userService.GetUserAsync(update.Message.From.Id, ct);
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                     await _toDoListService.Add(toDoUser, update.Message.Text, ct);
                     return ScenarioResult.Completed;

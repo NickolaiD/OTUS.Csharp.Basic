@@ -65,7 +65,6 @@ namespace TelegramBot.Scenarios
                     await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Выберите список:", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     return ScenarioResult.Transition;
                 case "Approve":
-                    //toDoUser = await _userService.GetUserAsync(update.Message.From.Id, ct);
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
 
                     toDoListCallback = ToDoListCallbackDto.FromString(update.CallbackQuery.Data);
@@ -84,8 +83,6 @@ namespace TelegramBot.Scenarios
                     });
 
                     await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, $"Подтверждаете удаление списка { toDoList.Name} и всех его задач?", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
-                    
-                    //await _toDoListService.Add(toDoUser, update.Message.Text, ct);
                     return ScenarioResult.Transition;
                 case "Delete":
                     callback = CallbackDto.FromString(update.CallbackQuery.Data);
