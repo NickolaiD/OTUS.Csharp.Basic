@@ -84,13 +84,13 @@ namespace TelegramBot.Scenarios
                     toDoDate = (DateTime)context.Data.GetValueOrDefault("Date");
 
                     var callback = ToDoListCallbackDto.FromString(update.CallbackQuery.Data);
-                    if (callback.ToDoListId.Equals("null"))
+                    if (callback.ToDoListId == null)
                     {
                         await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, null, ct);
                     }
                     else
                     {
-                        var toDoList = await _toDoListService.Get(callback.ToDoListId, ct);
+                        var toDoList = await _toDoListService.Get(callback.ToDoListId.GetValueOrDefault(), ct);
                         await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, toDoList, ct);
                     }
 

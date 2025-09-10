@@ -8,7 +8,7 @@ namespace TelegramBot.Dto
 {
     internal class ToDoListCallbackDto : CallbackDto
     {
-        public Guid ToDoListId { get; private set; }
+        public Guid? ToDoListId { get; private set; }
         public static new ToDoListCallbackDto FromString(string input)
         {
             var stringArray = input.Split('|');
@@ -18,7 +18,7 @@ namespace TelegramBot.Dto
             }
             else
             {
-                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = Guid.Empty };
+                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = null };
             }
         }
         public override string ToString() 

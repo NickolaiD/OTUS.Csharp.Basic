@@ -68,7 +68,7 @@ namespace TelegramBot.Scenarios
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
 
                     toDoListCallback = ToDoListCallbackDto.FromString(update.CallbackQuery.Data);
-                    var toDoList = await _toDoListService.Get(toDoListCallback.ToDoListId, ct);
+                    var toDoList = await _toDoListService.Get(toDoListCallback.ToDoListId.GetValueOrDefault(), ct);
 
                     context.CurrentStep = "Delete";
                     context.Data.Add("toDoList", toDoList);
