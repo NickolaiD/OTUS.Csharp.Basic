@@ -145,10 +145,10 @@ namespace TelegramBot
                     }
                     break;
                 case "addlist":
-                    await ProcessScenario(new ScenarioContext(ScenarioType.AddList), update, ct);
+                    await ProcessScenario(new ScenarioContext(ScenarioType.AddList, update.CallbackQuery.From.Id), update, ct);
                     break;
                 case "deletelist":
-                    await ProcessScenario(new ScenarioContext(ScenarioType.DeleteList), update, ct);
+                    await ProcessScenario(new ScenarioContext(ScenarioType.DeleteList, update.CallbackQuery.From.Id), update, ct);
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);
@@ -269,7 +269,7 @@ namespace TelegramBot
 
         private async Task CommandAddTask(string parameter, Update botUpdate, CancellationToken ct)
         {
-            await ProcessScenario(new ScenarioContext(ScenarioType.AddTask), botUpdate, ct);
+            await ProcessScenario(new ScenarioContext(ScenarioType.AddTask, botUpdate.Message.From.Id), botUpdate, ct);
         }
 
         private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
@@ -399,25 +399,14 @@ namespace TelegramBot
             var scenario = GetScenario(context.CurrentScenario);
             var result = await scenario.HandleMessageAsync(_botClient, context, update, ct);
 
-            long tgUserId = 0;
-            if (update.Message != null)
-            {
-                tgUserId = update.Message.From.Id;
-            }
-            else
-            {
-                tgUserId = update.CallbackQuery.From.Id;
-            }
-
-
             if (result == ScenarioResult.Completed)
             {
-                await _contextRepository.ResetContext(tgUserId, ct);
+                await _contextRepository.ResetContext(context.UserId, ct);
             }
             else
             {
-                await _contextRepository.ResetContext(tgUserId, ct);
-                await _contextRepository.SetContext(tgUserId, context, ct);
+                await _contextRepository.ResetContext(context.UserId, ct);
+                await _contextRepository.SetContext(context.UserId, context, ct);
             }
             
         }
