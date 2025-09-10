@@ -71,6 +71,11 @@ namespace TelegramBot.Services
         {
             return await Task.Run(() => _toDoRepository.GetByUserIdAndList(userId, listId, ct));
         }
+
+        public Task<ToDoItem?> Get(Guid toDoItemId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

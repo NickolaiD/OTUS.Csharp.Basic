@@ -136,13 +136,13 @@ namespace TelegramBot
                         return;
                     }
 
-                    int counter = 1;
+                    var listButtons = new List<InlineKeyboardButton>();
                     foreach (var toDoItem in userToDoItemList)
                     {
-
-                        await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                        counter++;
+                        //await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        listButtons.Add(InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}"));
                     }
+                    var replyKeyboardMarkup = new InlineKeyboardMarkup(new[] { listButtons.ToArray() });
                     break;
                 case "addlist":
                     await ProcessScenario(new ScenarioContext(ScenarioType.AddList, update.CallbackQuery.From.Id), update, ct);
