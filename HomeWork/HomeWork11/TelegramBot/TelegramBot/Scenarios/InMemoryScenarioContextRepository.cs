@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,28 +9,33 @@ namespace TelegramBot.Scenarios
 {
     internal class InMemoryScenarioContextRepository : IScenarioContextRepository
     {
-        private Dictionary<long, ScenarioContext> _scenarioContexts;
+        private ConcurrentDictionary<long, ScenarioContext> _scenarioContexts;
 
         public InMemoryScenarioContextRepository()
         {
-            _scenarioContexts = new Dictionary<long, ScenarioContext>();
+            _scenarioContexts = new ConcurrentDictionary<long, ScenarioContext>();
         }
 
         public async Task<ScenarioContext?> GetContext(long userId, CancellationToken ct)
         {
             ScenarioContext? result = null;
-            await Task.Run(() => result = _scenarioContexts.GetValueOrDefault(userId));
+            await Task.Run(() => 
+            {
+                 if (_scenarioContexts.TryGetValue(userId, out ScenarioContext? value))
+                    result = value;
+            }
+            ); 
             return result;
         }
 
         public async Task ResetContext(long userId, CancellationToken ct)
         {
-            await Task.Run(() => _scenarioContexts.Remove(userId));
+            await Task.Run(() => _scenarioContexts.TryRemove(userId, out ScenarioContext? value));
         }
 
         public async Task SetContext(long userId, ScenarioContext context, CancellationToken ct)
         {
-            await Task.Run(() => _scenarioContexts.Add(userId, context));
+            await Task.Run(() => _scenarioContexts.GetOrAdd(userId, context));
         }
     }
 }

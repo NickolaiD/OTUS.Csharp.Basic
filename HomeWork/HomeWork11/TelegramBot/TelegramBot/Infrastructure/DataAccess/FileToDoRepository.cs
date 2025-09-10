@@ -189,6 +189,18 @@ namespace TelegramBot.Infrastructure.DataAccess
             }
             return fileIndex;
         }
+        public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct)
+        {
+            var toDoItemList = await GetAllByUserIdAsync(userId, ct);
+            if (listId == null)
+            {
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List == null && x.State == ToDoItemState.Active).ToList();
+            }
+            else
+            {
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List != null && x.State == ToDoItemState.Active).Where(x => x.List.Id == listId).ToList();
+            }
+        }
 
     }
 }

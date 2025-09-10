@@ -23,8 +23,9 @@ namespace TelegramBot
             var botClient = new TelegramBotClient(token);
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = [UpdateType.Message],
-                DropPendingUpdates = true
+                AllowedUpdates = [UpdateType.Message, UpdateType.CallbackQuery],
+                DropPendingUpdates = true,
+
             };
 
             var ping = await botClient.GetMe();
@@ -36,12 +37,15 @@ namespace TelegramBot
             var cts = new CancellationTokenSource();
             var userService = new UserService();
             var toDoService = new ToDoService(taskCountLimit, taskLengthLimit, toDoRepository);
+            var toDoListService = new ToDoListService();
 
             var scenarioList = new List<IScenario>();
-            scenarioList.Add(new AddTaskScenario(userService, toDoService));
+            scenarioList.Add(new AddTaskScenario(userService, toDoService, toDoListService));
+            scenarioList.Add(new AddListScenario(userService, toDoListService));
+            scenarioList.Add(new DeleteListScenario(userService, toDoListService, toDoService));
 
             var handler = new UpdateHandler(userService, botClient, toDoService,
-                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository());
+                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository(), new ToDoListService());
 
             try
             {
@@ -53,8 +57,7 @@ namespace TelegramBot
                 {
                     new BotCommand { Command = "start", Description = "Запуск бота" },
                     new BotCommand { Command = "help", Description = "Помощь" },
-                    new BotCommand { Command = "showalltasks", Description = "Список всех задач" },
-                    new BotCommand { Command = "showtasks", Description = "Список задач" },
+                    new BotCommand { Command = "show", Description = "Список задач" },
                     new BotCommand { Command = "report", Description = "Отчет" },
                 }, cancellationToken: cts.Token
               );
