@@ -143,12 +143,17 @@ namespace TelegramBot
                         listButtons.Add(InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}"));
                     }
                     var replyKeyboardMarkup = new InlineKeyboardMarkup(new[] { listButtons.ToArray() });
+                    await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     break;
                 case "addlist":
                     await ProcessScenario(new ScenarioContext(ScenarioType.AddList, update.CallbackQuery.From.Id), update, ct);
                     break;
                 case "deletelist":
                     await ProcessScenario(new ScenarioContext(ScenarioType.DeleteList, update.CallbackQuery.From.Id), update, ct);
+                    break;
+                case "showtask":
+                    var toDoItemCallback = ToDoItemCallbackDto.FromString(update.CallbackQuery.Data);
+                    await _toDoService.Get(toDoItemCallback.ToDoItemId, ct);
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);
