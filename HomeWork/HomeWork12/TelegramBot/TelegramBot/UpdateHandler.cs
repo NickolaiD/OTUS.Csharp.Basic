@@ -123,6 +123,7 @@ namespace TelegramBot
                 return; 
             }
             var callback = CallbackDto.FromString(update.CallbackQuery.Data);
+            InlineKeyboardMarkup replyKeyboardMarkup;
             switch (callback.Action)
             {
                 case "show":
@@ -141,13 +142,7 @@ namespace TelegramBot
                     {
                         listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}") });
                     }
-
-                    //listButtons.Add(new[]
-                //{
-                    //InlineKeyboardButton.WithCallbackData("🆕Выполнить", $"completetask|{toDoItem.Id}"),
-                    //InlineKeyboardButton.WithCallbackData("❌Удалить", $"deletetask|{toDoItem.Id}")
-                //})
-                    var replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
+                    replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
                     await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     break;
                 case "addlist":
@@ -163,9 +158,23 @@ namespace TelegramBot
                         var toDoItem = await _toDoService.Get((Guid)toDoItemCallback.ToDoItemId, ct);
                         if (toDoItem != null)
                         {
-                            await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{toDoItem.Name} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                            replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
+                            {
+                                new[]
+                                {
+                                    InlineKeyboardButton.WithCallbackData("✅Выполнить", $"completetask|{toDoItem.Id}"),
+                                    InlineKeyboardButton.WithCallbackData("❌Удалить", $"deletetask|{toDoItem.Id}")
+                                }
+                            });
+                             
+                            await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{toDoItem.Name}:\n Срок выполнения {toDoItem.Deadline}\n Время создания {toDoItem.CreatedAt}", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                         }
                     }
+                    break;
+                case "completetask":
+                    break;
+                case "deletetask":
+                    await ProcessScenario(new ScenarioContext(ScenarioType.DeleteTask, update.CallbackQuery.From.Id), update, ct);
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);

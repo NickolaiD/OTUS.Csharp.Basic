@@ -41,7 +41,7 @@ namespace TelegramBot.Scenarios
             switch (context.CurrentStep)
             {
                 case null:
-                    toDoUser = await _userService.GetUserAsync(update.CallbackQuery.From.Id, ct);
+                    toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.CurrentStep = "Approve";
                     context.Data.Add("User", toDoUser);
                     

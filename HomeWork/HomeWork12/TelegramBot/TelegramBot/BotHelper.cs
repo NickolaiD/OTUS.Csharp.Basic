@@ -12,7 +12,7 @@ namespace TelegramBot
 {
     internal static class BotHelper
     {
-        public static readonly string BASE_DIR = Path.Combine("D:", "TgBot");
+        public static readonly string BASE_DIR = Path.Combine("C:\\Users\\Nick\\Documents", "TgBot");
         public static ReplyKeyboardMarkup GetKeyboardButtons(bool userRegistered)
         {
             if (userRegistered)
