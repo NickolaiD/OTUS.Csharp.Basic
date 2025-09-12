@@ -8,7 +8,7 @@ namespace TelegramBot.Dto
 {
     public class ToDoItemCallbackDto : CallbackDto
     {
-        public Guid ToDoItemId { get; private set; }
+        public Guid? ToDoItemId { get; private set; }
         public static new ToDoItemCallbackDto FromString(string input)
         {
             var stringArray = input.Split('|');

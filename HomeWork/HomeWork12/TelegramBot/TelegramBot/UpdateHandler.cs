@@ -136,13 +136,18 @@ namespace TelegramBot
                         return;
                     }
 
-                    var listButtons = new List<InlineKeyboardButton>();
+                    var listButtons = new List<InlineKeyboardButton[]>();
                     foreach (var toDoItem in userToDoItemList)
                     {
-                        //await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{counter} - {toDoItem.Name} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                        listButtons.Add(InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}"));
+                        listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}") });
                     }
-                    var replyKeyboardMarkup = new InlineKeyboardMarkup(new[] { listButtons.ToArray() });
+
+                    //listButtons.Add(new[]
+                //{
+                    //InlineKeyboardButton.WithCallbackData("🆕Выполнить", $"completetask|{toDoItem.Id}"),
+                    //InlineKeyboardButton.WithCallbackData("❌Удалить", $"deletetask|{toDoItem.Id}")
+                //})
+                    var replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
                     await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     break;
                 case "addlist":
@@ -153,7 +158,14 @@ namespace TelegramBot
                     break;
                 case "showtask":
                     var toDoItemCallback = ToDoItemCallbackDto.FromString(update.CallbackQuery.Data);
-                    await _toDoService.Get(toDoItemCallback.ToDoItemId, ct);
+                    if (toDoItemCallback.ToDoItemId != null)
+                    {
+                        var toDoItem = await _toDoService.Get((Guid)toDoItemCallback.ToDoItemId, ct);
+                        if (toDoItem != null)
+                        {
+                            await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{toDoItem.Name} - {toDoItem.CreatedAt} - `{toDoItem.Id}`", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        }
+                    }
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);
