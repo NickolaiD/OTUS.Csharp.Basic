@@ -155,11 +155,11 @@ namespace TelegramBot
 
                     //await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
 
-                    await _botClient.EditMessageText( chatId: update.CallbackQuery.Message.Chat.Id,
-                                                      messageId: update.CallbackQuery.Message.MessageId,
-                                                      text: "Список задач",
-                                                      replyMarkup: replyKeyboardMarkup,
-                                                      cancellationToken: ct
+                    await _botClient.EditMessageText(chatId: update.CallbackQuery.Message.Chat.Id,
+                                                     messageId: update.CallbackQuery.Message.MessageId,
+                                                     text: "Список задач",
+                                                     replyMarkup: replyKeyboardMarkup,
+                                                     cancellationToken: ct
                                                      );
                     break;
                 case "addlist":
