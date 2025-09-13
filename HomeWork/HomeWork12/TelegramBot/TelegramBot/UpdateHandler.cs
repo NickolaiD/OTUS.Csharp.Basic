@@ -10,7 +10,7 @@ using TelegramBot.Entities;
 using TelegramBot.Exceptions;
 using TelegramBot.Scenarios;
 using TelegramBot.Services;
-using static TelegramBot.BotHelper;
+using static TelegramBot.Helpers.BotHelper;
 
 namespace TelegramBot
 {

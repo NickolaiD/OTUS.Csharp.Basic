@@ -8,7 +8,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Dto;
 using TelegramBot.Entities;
 
-namespace TelegramBot
+namespace TelegramBot.Helpers
 {
     internal static class BotHelper
     {

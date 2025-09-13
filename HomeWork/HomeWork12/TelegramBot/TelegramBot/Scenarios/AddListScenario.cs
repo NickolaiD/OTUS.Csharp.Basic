@@ -10,7 +10,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Entities;
 using TelegramBot.Services;
-using static TelegramBot.BotHelper;
+using static TelegramBot.Helpers.BotHelper;
 
 namespace TelegramBot.Scenarios
 {
