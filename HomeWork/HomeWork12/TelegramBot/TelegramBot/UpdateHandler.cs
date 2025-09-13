@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Collections.Generic;
+using System.Data.Common;
 using System.Reflection.Metadata;
 using System.Threading;
 using Telegram.Bot;
@@ -8,6 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Dto;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
+using TelegramBot.Helpers;
 using TelegramBot.Scenarios;
 using TelegramBot.Services;
 using static TelegramBot.Helpers.BotHelper;
@@ -24,6 +26,7 @@ namespace TelegramBot
         private readonly IEnumerable<IScenario> _scenarios;
         private readonly IScenarioContextRepository _contextRepository;
         private readonly IToDoListService _toDoListService;
+        private static readonly int _pageSize = 5;
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
@@ -128,7 +131,7 @@ namespace TelegramBot
             switch (callback.Action)
             {
                 case "show":
-                    var toDoListCallback = ToDoListCallbackDto.FromString(update.CallbackQuery.Data);
+                    var toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
                     IReadOnlyList<ToDoItem> userToDoItemList;
                     userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
 
@@ -138,13 +141,26 @@ namespace TelegramBot
                         return;
                     }
 
-                    var listButtons = new List<InlineKeyboardButton[]>();
+                    //var listButtons = new List<InlineKeyboardButton[]>();
+                    var listButtons = new List<KeyValuePair<string, string>>();
+                    
                     foreach (var toDoItem in userToDoItemList)
                     {
-                        listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}") });
+                        //listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}") });
+                        listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
                     }
-                    replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
-                    await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                    //replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
+
+                    replyKeyboardMarkup = BuildPagedButtons(listButtons, toDoListCallback);
+
+                    //await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+
+                    await _botClient.EditMessageText( chatId: update.CallbackQuery.Message.Chat.Id,
+                                                      messageId: update.CallbackQuery.Message.MessageId,
+                                                      text: "Список задач",
+                                                      replyMarkup: replyKeyboardMarkup,
+                                                      cancellationToken: ct
+                                                     );
                     break;
                 case "addlist":
                     await ProcessScenario(new ScenarioContext(ScenarioType.AddList, update.CallbackQuery.From.Id), update, ct);
@@ -300,14 +316,14 @@ namespace TelegramBot
             var listButtons = new List<InlineKeyboardButton>();
             foreach (var list in toDoList) 
             {
-                listButtons.Add(InlineKeyboardButton.WithCallbackData(list.Name, $"show|{list.Id}"));
+                listButtons.Add(InlineKeyboardButton.WithCallbackData(list.Name, $"show|{list.Id}|0"));
             }
             
             var replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("📌Без списка", "show|null")
+                    InlineKeyboardButton.WithCallbackData("📌Без списка", "show|null|0")
                 },
                 listButtons.ToArray(),
                 new[]
@@ -390,6 +406,26 @@ namespace TelegramBot
                 await _contextRepository.SetContext(context.UserId, context, ct);
             }
             
+        }
+        private InlineKeyboardMarkup BuildPagedButtons(IReadOnlyList<KeyValuePair<string, string>> callbackData, PagedListCallbackDto listDto)
+        {
+            int totalPages = (callbackData.Count + _pageSize - 1) / _pageSize;
+            var batch = callbackData.GetBatchByNumber(_pageSize, listDto.Page);
+            var listButtons = new List<InlineKeyboardButton[]>();
+            foreach (var button in batch)
+            {
+                listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(button.Key, button.Value) });
+            }
+
+            if (listDto.Page > 0)
+                listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page - 1}") });
+
+            if (listDto.Page < totalPages - 1)
+                listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("➡️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page + 1}") });
+
+            var replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
+
+            return replyKeyboardMarkup;
         }
     }
 }
