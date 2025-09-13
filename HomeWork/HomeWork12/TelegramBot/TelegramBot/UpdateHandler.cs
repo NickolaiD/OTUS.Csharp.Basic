@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata;
+﻿using System.Data.Common;
+using System.Reflection.Metadata;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -172,6 +173,10 @@ namespace TelegramBot
                     }
                     break;
                 case "completetask":
+                    toDoItemCallback = ToDoItemCallbackDto.FromString(update.CallbackQuery.Data);
+                    var toDoItemComplete = await _toDoService.Get(toDoItemCallback.ToDoItemId.GetValueOrDefault(), ct);
+                    await _toDoService.MarkCompletedAsync(toDoItemComplete.Id, ct);
+                    await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Задача завершена - {toDoItemComplete.Name}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     break;
                 case "deletetask":
                     await ProcessScenario(new ScenarioContext(ScenarioType.DeleteTask, update.CallbackQuery.From.Id), update, ct);
@@ -228,21 +233,14 @@ namespace TelegramBot
                     await CommandAddTask(parameter, botUpdate, ct);
                     break;
 
-                case "/completetask":
-                    await CommandCompleteTask(parameter, botUpdate, ct);
-                    break;
-
                 case "/show":
                       await CommandShow(parameter, botUpdate, ct);
-                    break;
-                
-                case "/removetask":
-                    await CommandRemoveTask(parameter, botUpdate, ct);
                     break;
                 
                 case "/report":
                     await CommandReport(botUpdate, ct);
                     break;
+                
                 case "/find":
                     await CommandShow(parameter, botUpdate, ct);
                     break;
@@ -279,8 +277,6 @@ namespace TelegramBot
 /show - показать список активных задач
 /find - показать список задач по фильтру
 /report - статистика по задачам
-/completetask - завершить активную задачу
-/removetask - удалить задачу из списка
 /cancel - отменить действие
 /exit - завершение работы"
 , cancellationToken: ct, replyMarkup: GetKeyboardButtons(userRegistered)
@@ -297,30 +293,6 @@ namespace TelegramBot
         {
             await ProcessScenario(new ScenarioContext(ScenarioType.AddTask, botUpdate.Message.From.Id), botUpdate, ct);
         }
-
-        private async Task CommandCompleteTask(string parameter, Update botUpdate, CancellationToken ct)
-        {
-            var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(toDoUser.UserId, ct);
-
-            if (userToDoItemList.Count == 0)
-            {
-                await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput("Список задач пуст", toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                return;
-            }
-            
-            foreach (var toDoItem in userToDoItemList)
-            {
-                if (toDoItem.Id.ToString() == parameter)
-                {
-                    await _toDoService.MarkCompletedAsync(toDoItem.Id, ct);
-                    await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача завершена - {toDoItem.Name} - {toDoItem.Id}", toDoUser), cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                    return;
-                }
-            }
-            await _botClient.SendMessage(botUpdate.Message.Chat, GetFullOutput($"Задача с Id {parameter} не найдена", toDoUser), cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-        }
-
         private async Task CommandShow(string parameter, Update botUpdate, CancellationToken ct)
         {
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
@@ -348,23 +320,6 @@ namespace TelegramBot
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Выберите список", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
           
         }
-        private async Task CommandRemoveTask(string taskNo, Update botUpdate, CancellationToken ct)
-        {
-            var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            var userToDoItemList = await _toDoService.GetAllByUserIdAsync(toDoUser.UserId, ct);
-            
-            if (userToDoItemList.Count == 0)
-            {
-                await _botClient.SendMessage(botUpdate.Message.Chat, "Список задач пуст", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                return;
-            }
-            
-            var taskNoInt = ParseAndValidateInt(taskNo, 1, userToDoItemList.Count);
-
-            await _toDoService.DeleteAsync(userToDoItemList[taskNoInt - 1].Id, ct);
-            await _botClient.SendMessage(botUpdate.Message.Chat, $"Задача с номером {taskNoInt} удалена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-        }
-
         private async Task CommandReport(Update botUpdate, CancellationToken ct)
         {
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);

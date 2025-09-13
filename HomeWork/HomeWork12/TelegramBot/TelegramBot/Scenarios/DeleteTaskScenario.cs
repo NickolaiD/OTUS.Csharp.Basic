@@ -38,7 +38,7 @@ namespace TelegramBot.Scenarios
             CallbackDto? callback = null;
             switch (context.CurrentStep)
             {
-                case "null":
+                case null:
                     toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.Data.Add("User", toDoUser);
 
