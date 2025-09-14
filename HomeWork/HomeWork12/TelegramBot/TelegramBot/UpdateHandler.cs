@@ -195,31 +195,44 @@ namespace TelegramBot
                     await ProcessScenario(new ScenarioContext(ScenarioType.DeleteTask, update.CallbackQuery.From.Id), update, ct);
                     break;
                 case "show_completed":
-                    toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
-                    userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
-
-                    if (userToDoItemList.Count == 0)
+                    var toDoUser = await _userService.GetUserAsync(update.CallbackQuery.From.Id, ct);
+                    var toDoList = await _toDoListService.GetUserLists(toDoUser.UserId, ct);
+                    var buttons = new List<InlineKeyboardButton>();
+                    foreach (var list in toDoList)
                     {
-                        await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                        return;
+                        buttons.Add(InlineKeyboardButton.WithCallbackData(list.Name, $"show|{list.Id}|0"));
                     }
 
-                    listButtons = new List<KeyValuePair<string, string>>();
-
-                    foreach (var toDoItem in userToDoItemList)
+                    replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
                     {
-                        listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
-                    }
+                       buttons.ToArray()
+                    });
 
-                    replyKeyboardMarkup = BuildPagedButtons(listButtons, toDoListCallback);
+                    await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Выберите список", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                    //toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
+                    //userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
 
-                    await _botClient.EditMessageText(chatId: update.CallbackQuery.Message.Chat.Id,
-                                                     messageId: update.CallbackQuery.Message.MessageId,
-                                                     text: "Список задач",
-                                                     replyMarkup: replyKeyboardMarkup,
-                                                     cancellationToken: ct
-                                                     );
-                    break;
+                    //if (userToDoItemList.Count == 0)
+                    //{
+                    //    await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                    //    return;
+                    //}
+
+                    //listButtons = new List<KeyValuePair<string, string>>();
+
+                    //foreach (var toDoItem in userToDoItemList)
+                    //{
+                    //    listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
+                    //}
+
+                    //replyKeyboardMarkup = BuildPagedButtons(listButtons, toDoListCallback);
+
+                    //await _botClient.EditMessageText(chatId: update.CallbackQuery.Message.Chat.Id,
+                    //                                 messageId: update.CallbackQuery.Message.MessageId,
+                    //                                 text: "Список задач",
+                    //                                 replyMarkup: replyKeyboardMarkup,
+                    //                                 cancellationToken: ct
+                    //                                 );
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);
