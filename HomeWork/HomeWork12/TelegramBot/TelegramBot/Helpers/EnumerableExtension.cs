@@ -13,8 +13,8 @@ namespace TelegramBot.Helpers
             if (batchSize <= 0)
                 throw new ArgumentException("Размер пачки должен быть больше 0");
 
-            if (batchNumber <= 0)
-                throw new ArgumentException("Номер пачки должен быть больше 0");
+            if (batchNumber < 0)
+                throw new ArgumentException("Номер пачки не должен быть отрицательным");
 
             return value.Skip(batchNumber * batchSize).Take(batchSize);
         }

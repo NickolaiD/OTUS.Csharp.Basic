@@ -26,7 +26,7 @@ namespace TelegramBot
         private readonly IEnumerable<IScenario> _scenarios;
         private readonly IScenarioContextRepository _contextRepository;
         private readonly IToDoListService _toDoListService;
-        private static readonly int _pageSize = 5;
+        private static readonly int _pageSize = 3;
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
@@ -128,11 +128,13 @@ namespace TelegramBot
             }
             var callback = CallbackDto.FromString(update.CallbackQuery.Data);
             InlineKeyboardMarkup replyKeyboardMarkup;
+            PagedListCallbackDto toDoListCallback;
+            IReadOnlyList<ToDoItem> userToDoItemList;
+            List<KeyValuePair<string, string>> listButtons;
             switch (callback.Action)
             {
                 case "show":
-                    var toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
-                    IReadOnlyList<ToDoItem> userToDoItemList;
+                    toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
                     userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
 
                     if (userToDoItemList.Count == 0)
@@ -141,19 +143,14 @@ namespace TelegramBot
                         return;
                     }
 
-                    //var listButtons = new List<InlineKeyboardButton[]>();
-                    var listButtons = new List<KeyValuePair<string, string>>();
+                    listButtons = new List<KeyValuePair<string, string>>();
                     
                     foreach (var toDoItem in userToDoItemList)
                     {
-                        //listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(toDoItem.Name, $"showtask|{toDoItem.Id}") });
                         listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
                     }
-                    //replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
 
                     replyKeyboardMarkup = BuildPagedButtons(listButtons, toDoListCallback);
-
-                    //await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"Список задач", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
 
                     await _botClient.EditMessageText(chatId: update.CallbackQuery.Message.Chat.Id,
                                                      messageId: update.CallbackQuery.Message.MessageId,
@@ -196,6 +193,33 @@ namespace TelegramBot
                     break;
                 case "deletetask":
                     await ProcessScenario(new ScenarioContext(ScenarioType.DeleteTask, update.CallbackQuery.From.Id), update, ct);
+                    break;
+                case "show_completed":
+                    toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
+                    userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
+
+                    if (userToDoItemList.Count == 0)
+                    {
+                        await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        return;
+                    }
+
+                    listButtons = new List<KeyValuePair<string, string>>();
+
+                    foreach (var toDoItem in userToDoItemList)
+                    {
+                        listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
+                    }
+
+                    replyKeyboardMarkup = BuildPagedButtons(listButtons, toDoListCallback);
+
+                    await _botClient.EditMessageText(chatId: update.CallbackQuery.Message.Chat.Id,
+                                                     messageId: update.CallbackQuery.Message.MessageId,
+                                                     text: "Список задач",
+                                                     replyMarkup: replyKeyboardMarkup,
+                                                     cancellationToken: ct
+                                                     );
+                    break;
                     break;
             }
             PublishOnUpdateCompleted(update.CallbackQuery.Data);
@@ -382,7 +406,6 @@ namespace TelegramBot
         public void PublishOnUpdateCompleted(string message) => OnHandleUpdateCompleted.Invoke(message);
         private IScenario GetScenario(ScenarioType scenario)
         {
-
             foreach (var item in _scenarios)
             {
                 if (item.CanHandle(scenario))
@@ -405,7 +428,6 @@ namespace TelegramBot
                 await _contextRepository.ResetContext(context.UserId, ct);
                 await _contextRepository.SetContext(context.UserId, context, ct);
             }
-            
         }
         private InlineKeyboardMarkup BuildPagedButtons(IReadOnlyList<KeyValuePair<string, string>> callbackData, PagedListCallbackDto listDto)
         {
@@ -417,15 +439,18 @@ namespace TelegramBot
                 listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData(button.Key, button.Value) });
             }
 
+            var pageButtons = new List<InlineKeyboardButton>();
+
             if (listDto.Page > 0)
-                listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("⬅️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page - 1}") });
+                pageButtons.Add(InlineKeyboardButton.WithCallbackData("⬅️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page - 1}"));
 
             if (listDto.Page < totalPages - 1)
-                listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("➡️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page + 1}") });
+                pageButtons.Add(InlineKeyboardButton.WithCallbackData("➡️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page + 1}"));
+            
+            listButtons.Add(pageButtons.ToArray());  
+            listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("☑️Посмотреть выполненные", $"show_completed|{listDto.ToDoListId}|{0}") });
 
-            var replyKeyboardMarkup = new InlineKeyboardMarkup(listButtons);
-
-            return replyKeyboardMarkup;
+            return new InlineKeyboardMarkup(listButtons);
         }
     }
 }
