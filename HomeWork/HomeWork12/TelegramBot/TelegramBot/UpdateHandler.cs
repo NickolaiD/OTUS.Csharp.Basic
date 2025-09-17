@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data.Common;
-using System.Reflection.Metadata;
-using System.Threading;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -16,7 +12,7 @@ using static TelegramBot.Helpers.BotHelper;
 
 namespace TelegramBot
 {
-    public delegate void MessageEventHandler(string  message);
+    public delegate void MessageEventHandler(string message);
     internal class UpdateHandler : IUpdateHandler
     {
         private readonly IUserService _userService;
@@ -30,7 +26,7 @@ namespace TelegramBot
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
-        public UpdateHandler(IUserService userService, 
+        public UpdateHandler(IUserService userService,
                              ITelegramBotClient botClient,
                              IToDoService toDoService,
                              IToDoReportService toDoReportService,
@@ -57,7 +53,7 @@ namespace TelegramBot
                     { Message: { } message } => OnMessage(update, ct),
                     { CallbackQuery: { } callbackQuery } => OnCallbackQuery(update, ct)
                 });
-                
+
             }
 
             catch (ArgumentException ex)
@@ -84,7 +80,7 @@ namespace TelegramBot
             catch (DuplicateTaskException ex)
             {
                 if (update.Message != null)
-                  await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                    await botClient.SendMessage(update.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                 else if (update.CallbackQuery != null)
                     await botClient.SendMessage(update.CallbackQuery.Message.Chat, ex.Message, cancellationToken: ct, replyMarkup: GetKeyboardCancel());
             }
@@ -124,19 +120,20 @@ namespace TelegramBot
             var _toDoUser = await _userService.GetUserAsync(update.CallbackQuery.From.Id, ct);
             if (_toDoUser == null)
             {
-                return; 
+                return;
             }
             var callback = CallbackDto.FromString(update.CallbackQuery.Data);
             InlineKeyboardMarkup replyKeyboardMarkup;
             PagedListCallbackDto toDoListCallback;
             IReadOnlyList<ToDoItem> userToDoItemList;
+            IReadOnlyList<ToDoItem> userToDoItemListAll;
             List<KeyValuePair<string, string>> listButtons;
             switch (callback.Action)
             {
                 case "show":
                     toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
-                    userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
-
+                    userToDoItemListAll = (await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct));
+                    userToDoItemList = userToDoItemListAll.Where(x => x.State == ToDoItemState.Active).ToList();
                     if (userToDoItemList.Count == 0)
                     {
                         await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
@@ -144,7 +141,7 @@ namespace TelegramBot
                     }
 
                     listButtons = new List<KeyValuePair<string, string>>();
-                    
+
                     foreach (var toDoItem in userToDoItemList)
                     {
                         listButtons.Add(new KeyValuePair<string, string>(toDoItem.Name, $"showtask|{toDoItem.Id}"));
@@ -170,7 +167,12 @@ namespace TelegramBot
                     if (toDoItemCallback.ToDoItemId != null)
                     {
                         var toDoItem = await _toDoService.Get((Guid)toDoItemCallback.ToDoItemId, ct);
-                        if (toDoItem != null)
+                        if (toDoItem == null)
+                        {
+                            throw new ArgumentNullException($"Задача с ID {toDoItemCallback.ToDoItemId} не найдена");
+                        }
+                        
+                        if ((toDoItem.State == ToDoItemState.Active))
                         {
                             replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
                             {
@@ -180,8 +182,11 @@ namespace TelegramBot
                                     InlineKeyboardButton.WithCallbackData("❌Удалить", $"deletetask|{toDoItem.Id}")
                                 }
                             });
-                             
-                            await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{toDoItem.Name}:\n Срок выполнения {toDoItem.Deadline}\n Время создания {toDoItem.CreatedAt}", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+
+                            var endDateTextDescription = "";
+                            if (toDoItem.State == ToDoItemState.Completed)
+                                endDateTextDescription = $"\n Время выполнения {toDoItem.StateChangedAt}";
+                            await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{toDoItem.Name}:\n Срок выполнения {toDoItem.Deadline}\n Время создания {toDoItem.CreatedAt}{endDateTextDescription}", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                         }
                     }
                     break;
@@ -196,7 +201,8 @@ namespace TelegramBot
                     break;
                 case "show_completed":
                     toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
-                    userToDoItemList = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
+                    userToDoItemListAll = await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct);
+                    userToDoItemList = userToDoItemListAll.Where(x => x.State == ToDoItemState.Completed).ToList();
 
                     if (userToDoItemList.Count == 0)
                     {
@@ -234,7 +240,7 @@ namespace TelegramBot
             {
                 if ((userCommand != "/start") && (userCommand != "/help") && (userCommand != "/info"))
                 {
-                    await _botClient.SendMessage(botUpdate.Message.Chat, "Доступны команды /start, /help, /info", cancellationToken: ct, replyMarkup:GetKeyboardButtons(false));
+                    await _botClient.SendMessage(botUpdate.Message.Chat, "Доступны команды /start, /help, /info", cancellationToken: ct, replyMarkup: GetKeyboardButtons(false));
                     return;
                 }
             }
@@ -273,13 +279,13 @@ namespace TelegramBot
                     break;
 
                 case "/show":
-                      await CommandShow(parameter, botUpdate, ct);
+                    await CommandShow(parameter, botUpdate, ct);
                     break;
-                
+
                 case "/report":
                     await CommandReport(botUpdate, ct);
                     break;
-                
+
                 case "/find":
                     await CommandShow(parameter, botUpdate, ct);
                     break;
@@ -289,7 +295,7 @@ namespace TelegramBot
                     return;
 
                 default:
-                    await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser)}", cancellationToken: ct, replyMarkup:GetKeyboardButtons(userRegistered));
+                    await _botClient.SendMessage(botUpdate.Message.Chat, $"{GetFullOutput($"Команда {command} не существует", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(userRegistered));
                     break;
             }
             return;
@@ -298,7 +304,7 @@ namespace TelegramBot
         private async Task CommandStart(Update botUpdate, CancellationToken ct)
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
-            if (_toDoUser == null) 
+            if (_toDoUser == null)
                 _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, ct);
 
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
@@ -337,11 +343,11 @@ namespace TelegramBot
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             var toDoList = await _toDoListService.GetUserLists(toDoUser.UserId, ct);
             var listButtons = new List<InlineKeyboardButton>();
-            foreach (var list in toDoList) 
+            foreach (var list in toDoList)
             {
                 listButtons.Add(InlineKeyboardButton.WithCallbackData(list.Name, $"show|{list.Id}|0"));
             }
-            
+
             var replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
             {
                 new[]
@@ -357,13 +363,13 @@ namespace TelegramBot
             });
 
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Выберите список", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
-          
+
         }
         private async Task CommandReport(Update botUpdate, CancellationToken ct)
         {
             var toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             var stats = await Task.Run(() => _toDoReportService.GetUserStatsAsync(toDoUser.UserId, ct));
-            await _botClient.SendMessage(botUpdate.Message.Chat, 
+            await _botClient.SendMessage(botUpdate.Message.Chat,
                 $"Статистика по задачам на {stats.generatedAt}. Всего: {stats.total}; Завершенных: {stats.completed}; Активных: {stats.active}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
         }
 
@@ -445,8 +451,8 @@ namespace TelegramBot
 
             if (listDto.Page < totalPages - 1)
                 pageButtons.Add(InlineKeyboardButton.WithCallbackData("➡️", $"{listDto.Action}|{listDto.ToDoListId}|{listDto.Page + 1}"));
-            
-            listButtons.Add(pageButtons.ToArray());  
+
+            listButtons.Add(pageButtons.ToArray());
             listButtons.Add(new[] { InlineKeyboardButton.WithCallbackData("☑️Посмотреть выполненные", $"show_completed|{listDto.ToDoListId}|{0}") });
 
             return new InlineKeyboardMarkup(listButtons);

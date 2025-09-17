@@ -194,11 +194,11 @@ namespace TelegramBot.Infrastructure.DataAccess
             var toDoItemList = await GetAllByUserIdAsync(userId, ct);
             if (listId == null)
             {
-                return toDoItemList.Where(x => x.User.UserId == userId && x.List == null && x.State == ToDoItemState.Active).ToList();
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List == null).ToList();
             }
             else
             {
-                return toDoItemList.Where(x => x.User.UserId == userId && x.List != null && x.State == ToDoItemState.Active).Where(x => x.List.Id == listId).ToList();
+                return toDoItemList.Where(x => x.User.UserId == userId && x.List != null).Where(x => x.List.Id == listId).ToList();
             }
         }
 
