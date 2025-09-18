@@ -12,13 +12,24 @@ namespace TelegramBot.Dto
         public static new PagedListCallbackDto FromString(string input)
         {
             var stringArray = input.Split('|');
-            if (int.TryParse(stringArray[2], out var page))
+            Guid? toDoItemId;
+
+            if (Guid.TryParse(stringArray[1], out var guid))
             {
-                return new PagedListCallbackDto { Action = stringArray[0], Page = page };
+                toDoItemId = guid;
             }
             else
             {
-                return new PagedListCallbackDto { Action = stringArray[0], Page = -1 };
+                toDoItemId = null;
+            }
+
+            if (int.TryParse(stringArray[2], out var page))
+            {
+                return new PagedListCallbackDto { Action = stringArray[0], Page = page, ToDoListId = toDoItemId };
+            }
+            else
+            {
+                return new PagedListCallbackDto { Action = stringArray[0], Page = -1, ToDoListId = toDoItemId };
             }
         }
         public override string ToString() 
