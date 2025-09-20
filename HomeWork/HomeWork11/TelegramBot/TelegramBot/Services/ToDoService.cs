@@ -1,4 +1,5 @@
-﻿using TelegramBot.Core.DataAccess;
+﻿using Telegram.Bot.Types;
+using TelegramBot.Core.DataAccess;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
 using TelegramBot.Infrastructure.DataAccess;
@@ -17,9 +18,9 @@ namespace TelegramBot.Services
             _toDoRepository = toDoRepository;
         }
 
-        public async Task<ToDoItem> AddAsync(ToDoUser user, string toDoItemName, DateTime deadline, CancellationToken ct)
+        public async Task<ToDoItem> AddAsync(ToDoUser user, string toDoItemName, DateTime deadline, ToDoList? list, CancellationToken ct)
         {
-            ValidateString(toDoItemName);
+            BotHelper.ValidateString(toDoItemName);
 
             if (await _toDoRepository.CountActiveAsync(user.UserId, ct) >= _taskCountLimit)
                 throw new TaskCountLimitException(_taskCountLimit);
@@ -32,7 +33,7 @@ namespace TelegramBot.Services
                 throw new DuplicateTaskException(toDoItemName);
             }
 
-            var newToDoItem = new ToDoItem(user, toDoItemName, deadline);
+            var newToDoItem = new ToDoItem(user, toDoItemName, deadline, list);
 
             await _toDoRepository.AddAsync(newToDoItem, ct);
             return newToDoItem;
@@ -61,26 +62,14 @@ namespace TelegramBot.Services
                  _toDoRepository.Update(toDoItem);
             }
         }
-
-        private void ValidateString(string? str)
-        {
-            if (!string.IsNullOrEmpty(str))
-            {
-                foreach (var item in str)
-                {
-                    if (!char.IsWhiteSpace(item))
-                    {
-                        return;
-                    }
-                }
-            }
-
-            throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
-        }
-
         public async Task<IReadOnlyList<ToDoItem>> FindAsync(ToDoUser user, string namePrefix, CancellationToken ct)
         {
             return await Task.Run(() => _toDoRepository.FindAsync(user.UserId, x => x.Name.StartsWith(namePrefix), ct));
+        }
+
+        public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndListAsync(Guid userId, Guid? listId, CancellationToken ct)
+        {
+            return await Task.Run(() => _toDoRepository.GetByUserIdAndList(userId, listId, ct));
         }
     }
 

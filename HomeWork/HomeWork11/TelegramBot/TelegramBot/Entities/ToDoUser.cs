@@ -1,6 +1,6 @@
 ﻿namespace TelegramBot.Entities
 {
-    internal class ToDoUser
+    public class ToDoUser
     {
         public Guid UserId { get; init; }
         public string TelegramUserName { get; init; }

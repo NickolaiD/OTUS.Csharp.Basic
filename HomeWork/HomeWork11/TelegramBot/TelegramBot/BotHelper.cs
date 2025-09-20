@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Dto;
+using TelegramBot.Entities;
 
 namespace TelegramBot
 {
@@ -16,7 +19,7 @@ namespace TelegramBot
             {
                 ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
                 {
-                new KeyboardButton[] { "/addtask", "/showalltasks", "/showtasks", "/report" },
+                new KeyboardButton[] { "/addtask", "/show", "/report" },
             })
                 {
                     ResizeKeyboard = true
@@ -50,6 +53,20 @@ namespace TelegramBot
                 };
 
                 return replyKeyboardMarkup;
+        }
+        public static void ValidateString(string? str)
+        {
+            if (!string.IsNullOrEmpty(str))
+            {
+                foreach (var item in str)
+                {
+                    if (!char.IsWhiteSpace(item))
+                    {
+                        return;
+                    }
+                }
+            }
+            throw new ArgumentException("Передаваемый параметр пуст или содержит одни пробелы");
         }
     }
 }
