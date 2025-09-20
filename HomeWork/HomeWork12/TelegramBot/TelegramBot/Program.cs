@@ -4,6 +4,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Helpers;
 using TelegramBot.Infrastructure.DataAccess;
 using TelegramBot.Scenarios;
 using TelegramBot.Services;
@@ -43,6 +44,7 @@ namespace TelegramBot
             scenarioList.Add(new AddTaskScenario(userService, toDoService, toDoListService));
             scenarioList.Add(new AddListScenario(userService, toDoListService));
             scenarioList.Add(new DeleteListScenario(userService, toDoListService, toDoService));
+            scenarioList.Add(new DeleteTaskScenario(userService, toDoService));
 
             var handler = new UpdateHandler(userService, botClient, toDoService,
                                             new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository(), new ToDoListService());
