@@ -22,7 +22,7 @@ namespace TelegramBot
         private readonly IEnumerable<IScenario> _scenarios;
         private readonly IScenarioContextRepository _contextRepository;
         private readonly IToDoListService _toDoListService;
-        private static readonly int _pageSize = 3;
+        private static readonly int _pageSize = 5;
         private event MessageEventHandler OnHandleUpdateStarted;
         private event MessageEventHandler OnHandleUpdateCompleted;
 
@@ -134,11 +134,6 @@ namespace TelegramBot
                     toDoListCallback = PagedListCallbackDto.FromString(update.CallbackQuery.Data);
                     userToDoItemListAll = (await _toDoService.GetByUserIdAndListAsync(_toDoUser.UserId, toDoListCallback.ToDoListId, ct));
                     userToDoItemList = userToDoItemListAll.Where(x => x.State == ToDoItemState.Active).ToList();
-                    if (userToDoItemList.Count == 0)
-                    {
-                        await _botClient.SendMessage(update.CallbackQuery.Message.Chat, $"{GetFullOutput("Список задач пуст", _toDoUser)}", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
-                        return;
-                    }
 
                     listButtons = new List<KeyValuePair<string, string>>();
 
