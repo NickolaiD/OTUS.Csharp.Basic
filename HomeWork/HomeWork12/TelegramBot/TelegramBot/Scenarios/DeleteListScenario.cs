@@ -10,8 +10,9 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Dto;
 using TelegramBot.Entities;
+using TelegramBot.Helpers;
 using TelegramBot.Services;
-using static TelegramBot.BotHelper;
+using static TelegramBot.Helpers.BotHelper;
 
 namespace TelegramBot.Scenarios
 {
@@ -41,7 +42,7 @@ namespace TelegramBot.Scenarios
             switch (context.CurrentStep)
             {
                 case null:
-                    toDoUser = await _userService.GetUserAsync(update.CallbackQuery.From.Id, ct);
+                    toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.CurrentStep = "Approve";
                     context.Data.Add("User", toDoUser);
                     

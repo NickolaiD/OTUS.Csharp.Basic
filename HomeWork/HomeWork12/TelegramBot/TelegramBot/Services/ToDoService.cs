@@ -2,6 +2,7 @@
 using TelegramBot.Core.DataAccess;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
+using TelegramBot.Helpers;
 using TelegramBot.Infrastructure.DataAccess;
 
 namespace TelegramBot.Services
@@ -70,6 +71,12 @@ namespace TelegramBot.Services
         public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndListAsync(Guid userId, Guid? listId, CancellationToken ct)
         {
             return await Task.Run(() => _toDoRepository.GetByUserIdAndList(userId, listId, ct));
+        }
+
+        public async Task<ToDoItem?> Get(Guid toDoItemId, CancellationToken ct)
+        {
+            return await _toDoRepository.GetAsync(toDoItemId, ct);
+
         }
     }
 

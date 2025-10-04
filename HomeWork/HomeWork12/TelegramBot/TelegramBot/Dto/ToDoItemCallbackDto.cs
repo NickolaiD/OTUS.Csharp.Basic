@@ -6,24 +6,24 @@ using System.Threading.Tasks;
 
 namespace TelegramBot.Dto
 {
-    internal class ToDoListCallbackDto : CallbackDto
+    public class ToDoItemCallbackDto : CallbackDto
     {
-        public Guid? ToDoListId { get; protected set; }
-        public static new ToDoListCallbackDto FromString(string input)
+        public Guid? ToDoItemId { get; private set; }
+        public static new ToDoItemCallbackDto FromString(string input)
         {
             var stringArray = input.Split('|');
             if (Guid.TryParse(stringArray[1], out var guid))
             {
-                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = guid };
+                return new ToDoItemCallbackDto { Action = stringArray[0], ToDoItemId = guid };
             }
             else
             {
-                return new ToDoListCallbackDto { Action = stringArray[0], ToDoListId = null };
+                return new ToDoItemCallbackDto { Action = stringArray[0], ToDoItemId = null };
             }
         }
         public override string ToString() 
         {
-            return $"{base.ToString()}|{ToDoListId}";
+            return $"{base.ToString()}|{ToDoItemId}";
         }
     }
 }

@@ -10,7 +10,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Entities;
 using TelegramBot.Services;
-using static TelegramBot.BotHelper;
+using static TelegramBot.Helpers.BotHelper;
 
 namespace TelegramBot.Scenarios
 {
@@ -35,7 +35,7 @@ namespace TelegramBot.Scenarios
             switch (context.CurrentStep)
             {
                 case null:
-                    toDoUser = await _userService.GetUserAsync(update.CallbackQuery.From.Id, ct);
+                    toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.CurrentStep = "Name";
                     context.Data.Add("User", toDoUser);
                     await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Введите название списка:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
