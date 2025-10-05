@@ -1,4 +1,4 @@
-CREATE DATABASE "ToDoList2"
+CREATE DATABASE "ToDoList"
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'
