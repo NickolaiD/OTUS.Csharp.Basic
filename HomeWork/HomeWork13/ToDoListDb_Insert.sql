@@ -1,43 +1,39 @@
--- Table: public.todo_item
+---todo_user
 
--- DROP TABLE IF EXISTS public.todo_item;
+INSERT INTO public.todo_user (id, tg_user_name, registered_at, tg_userid)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'ivan_petrov', NOW(), 123456789);
 
-CREATE TABLE IF NOT EXISTS public.todo_item
-(
-    id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    created_at time with time zone NOT NULL,
-    state integer NOT NULL,
-    state_change_at time with time zone,
-    deadline time with time zone NOT NULL,
-    list_id uuid,
-    CONSTRAINT todo_item_pkey PRIMARY KEY (id),
-    CONSTRAINT fk_todo_item_list FOREIGN KEY (list_id)
-        REFERENCES public.todo_list (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE,
-    CONSTRAINT fk_todo_item_user FOREIGN KEY (user_id)
-        REFERENCES public.todo_user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE
-)
+INSERT INTO public.todo_user (id, tg_user_name, registered_at, tg_userid)
+VALUES ('b1ffac1d-8e5f-4a3e-9c4b-2aa7bd490a22'::uuid, 'maria_ivanova', NOW(), 987654321);
 
-CREATE INDEX IF NOT EXISTS idx_todo_item_list_id
-    ON public.todo_item USING btree
-    (list_id ASC NULLS LAST)
-    WITH (deduplicate_items=True)
-    TABLESPACE pg_default;
--- Index: idx_todo_item_user_id
+INSERT INTO public.todo_user (id, tg_user_name, registered_at, tg_userid)
+VALUES ('c2dde3ee-7f6a-4d5b-8c9d-3bb8ce500a33'::uuid, 'сергей_сидоров', NOW(), 555666777);
 
--- DROP INDEX IF EXISTS public.idx_todo_item_user_id;
+INSERT INTO public.todo_user (id, tg_user_name, registered_at, tg_userid)
+VALUES ('d3eff4ff-8e7b-5e6c-9d0e-4cc9df610a44'::uuid, 'alex_tech', NOW(),111222333);
 
-CREATE INDEX IF NOT EXISTS idx_todo_item_user_id
-    ON public.todo_item USING btree
-    (user_id ASC NULLS LAST)
-    WITH (deduplicate_items=True)
-    TABLESPACE pg_default;
+INSERT INTO public.todo_user (id, tg_user_name, registered_at, tg_userid)
+VALUES ('e4f00550-9e8c-6f7d-0e1f-5dda0f720a55'::uuid, 'test_user_bot', NOW(), 111222334);
 
+
+---todo_list
+INSERT INTO public.todo_list (id, name, user_id, created_at) 
+VALUES ('f5a01234-1a2b-3c4d-4e5f-6a7b8c9d0e1f', 'Личные задачи', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', NOW());
+
+INSERT INTO public.todo_list (id, name, user_id, created_at)
+VALUES ('f6b12345-2b3c-4d5e-5f6a-7b8c9d0e1f2a', 'Рабочие проекты', 'b1ffac1d-8e5f-4a3e-9c4b-2aa7bd490a22', NOW());
+
+INSERT INTO public.todo_list (id, name, user_id, created_at)
+VALUES ('f7c23456-3c4d-5e6f-6a7b-8c9d0e1f2a3b', 'Покупки', 'c2dde3ee-7f6a-4d5b-8c9d-3bb8ce500a33', NOW());
+
+INSERT INTO public.todo_list (id, name, user_id, created_at)
+VALUES ('f8d34567-4d5e-6f7a-7b8c-9d0e1f2a3b4c', 'Домашние дела', 'd3eff4ff-8e7b-5e6c-9d0e-4cc9df610a44', NOW());
+
+INSERT INTO public.todo_list (id, name, user_id, created_at)
+VALUES ('f9e45678-5e6f-7a8b-8c9d-0e1f2a3b4c5d', 'Разработка', 'e4f00550-9e8c-6f7d-0e1f-5dda0f720a55', NOW());
+
+
+---todo_item
 INSERT INTO public.todo_item (id, user_id, name, created_at, state, state_change_at, deadline, list_id)
 VALUES (
     'a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
