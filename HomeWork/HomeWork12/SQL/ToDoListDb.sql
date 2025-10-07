@@ -26,7 +26,7 @@ ALTER TABLE IF EXISTS public.todo_user
     OWNER to postgres;
 
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_todo_user_tg_userid
+CREATE UNIQUE INDEX IF NOT EXISTS uq_todo_user_tg_userid
     ON public.todo_user USING btree
     (tg_userid ASC NULLS LAST)
     WITH (deduplicate_items=False)
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.todo_list
     CONSTRAINT fk_todo_list_user FOREIGN KEY (user_id)
         REFERENCES public.todo_user (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE CASCADE
+        ON DELETE NO ACTION
 )
 
 TABLESPACE pg_default;
@@ -75,11 +75,11 @@ CREATE TABLE IF NOT EXISTS public.todo_item
     CONSTRAINT fk_todo_item_list FOREIGN KEY (list_id)
         REFERENCES public.todo_list (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE CASCADE,
+        ON DELETE NO ACTION,
     CONSTRAINT fk_todo_item_user FOREIGN KEY (user_id)
         REFERENCES public.todo_user (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE CASCADE
+        ON DELETE NO ACTION
 )
 
 TABLESPACE pg_default;
