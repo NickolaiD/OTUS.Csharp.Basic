@@ -1,11 +1,14 @@
-﻿using LinqToDB.Data;
+﻿using LinqToDB;
+using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using TelegramBot.Core.DataAccess;
+using TelegramBot.Core.DataAccess.Models;
 using TelegramBot.Entities;
 
 namespace TelegramBot.Infrastructure.DataAccess
@@ -21,6 +24,12 @@ namespace TelegramBot.Infrastructure.DataAccess
 
         public Task Add(ToDoList list, CancellationToken ct)
         {
+            //await Task.Run(() => _toDoItemList.Add(item));
+
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            dbContext.InsertAsync(list);
+
+
             throw new NotImplementedException();
         }
 
@@ -29,24 +38,10 @@ namespace TelegramBot.Infrastructure.DataAccess
             throw new NotImplementedException();
         }
 
-        public Task<bool> ExistsByName(Guid userId, string name, CancellationToken ct)
+        public async Task<bool> ExistsByName(Guid userId, string name, CancellationToken ct)
         {
-            //            using var dbContext = factory.CreateDataContext();
-            //            Использовать ModelMapper
-            //Не забудь добавлять LoadWith, чтобы загружать связанные сущности(eager loading)
-
-            //  .LoadWith(i => i.User)
-            //  .LoadWith(i => i.List)
-            //  .LoadWith(i => i.List!.User)
-
             using var dbContext = _dataContextFactory.CreateDataContext();
-
-            var t = new ToDoDataContext("dsgf");
-            
-            dbContext.
-            t.ToDoItems
-
-            throw new NotImplementedException();
+            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0);
         }
 
         public Task<ToDoList?> Get(Guid id, CancellationToken ct)
