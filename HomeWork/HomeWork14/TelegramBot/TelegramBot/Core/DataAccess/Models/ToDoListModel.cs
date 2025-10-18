@@ -20,7 +20,7 @@ namespace TelegramBot.Core.DataAccess.Models
         public string Name { get; set; }
 
         [Column("user_id"), NotNull] 
-        public ToDoUser User { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("created_at"), NotNull]
         public DateTime CreatedAt { get; set; }

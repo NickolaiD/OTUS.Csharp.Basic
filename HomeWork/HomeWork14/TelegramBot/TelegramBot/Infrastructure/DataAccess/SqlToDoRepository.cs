@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Telegram.Bot.Types;
 using TelegramBot.Core.DataAccess;
 using TelegramBot.Core.DataAccess.Models;
@@ -22,36 +23,45 @@ namespace TelegramBot.Infrastructure.DataAccess
             _dataContextFactory = dataContextFactory;
         }
 
-        public Task Add(ToDoList list, CancellationToken ct)
+        public async Task Add(ToDoList list, CancellationToken ct)
         {
-            //await Task.Run(() => _toDoItemList.Add(item));
-
             using var dbContext = _dataContextFactory.CreateDataContext();
-            dbContext.InsertAsync(list);
-
-
-            throw new NotImplementedException();
+            var t = ModelMapper.MapToModel(list);
+            await dbContext.InsertAsync<ToDoListModel>(t);
         }
 
-        public Task Delete(Guid id, CancellationToken ct)
+        public async Task Delete(Guid id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            await Task.Run(() => dbContext.GetTable<ToDoListModel>().Where(x => x.Id == id).Delete());
         }
 
         public async Task<bool> ExistsByName(Guid userId, string name, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0);
+            return await Task.Run(() => dbContext.GetTable<ToDoListModel>().Where(x => x.UserId == userId && x.Name == name).Count() > 0);
         }
 
-        public Task<ToDoList?> Get(Guid id, CancellationToken ct)
+        public async Task<ToDoList?> Get(Guid id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            var toDolistModel = await dbContext.GetTable<ToDoListModel>().Where(x => x.Id == id).FirstOrDefaultAsync();
+            return toDolistModel != null ? ModelMapper.MapFromModel(toDolistModel) : null;
         }
 
-        public Task<IReadOnlyList<ToDoList>> GetByUserId(Guid userId, CancellationToken ct)
+        public async Task<IReadOnlyList<ToDoList>> GetByUserId(Guid userId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            var toDolistModel = dbContext.GetTable<ToDoListModel>().Where(x => x.UserId == userId).ToList();
+
+            var resultList = new List<ToDoList>();
+
+            foreach (var item in toDolistModel)
+            {
+                resultList.Add(ModelMapper.MapFromModel(item));
+            }
+            
+            return resultList;
         }
     }
 }

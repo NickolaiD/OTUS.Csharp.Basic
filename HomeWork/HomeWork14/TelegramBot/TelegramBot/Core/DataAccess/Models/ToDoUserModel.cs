@@ -23,7 +23,7 @@ namespace TelegramBot.Core.DataAccess.Models
             [Column("tg_userid"), NotNull]
             public long TelegramUserId { get; set; }
 
-            [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoListModel.User))]
+            [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoListModel.UserId))]
             public List<ToDoListModel> ToDoLists { get; set; } = [];
 
             [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoItemModel.User))]

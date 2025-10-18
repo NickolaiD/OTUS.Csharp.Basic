@@ -21,7 +21,7 @@ namespace TelegramBot.Services
 
         public async Task<ToDoUser> RegisterUserAsync(long telegramUserId, string telegramUserName, CancellationToken ct)
         {
-            var user = new ToDoUser(telegramUserName, telegramUserId);
+            var user = new ToDoUser() { TelegramUserName = telegramUserName, TelegramUserId = telegramUserId };
             await _userRepository.AddAsync(user, ct);
             return user;
         }

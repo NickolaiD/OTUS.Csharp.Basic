@@ -16,7 +16,7 @@ namespace TelegramBot.Services
         private IToDoListRepository _toDoListRepository;
         public ToDoListService() 
         {
-            _toDoListRepository = new FileToDoListRepository(BotHelper.BASE_DIR);
+            _toDoListRepository = new SqlToDoRepository(new DataContextFactory());
         }
         public async Task<ToDoList> Add(ToDoUser user, string name, CancellationToken ct)
         {
@@ -29,8 +29,8 @@ namespace TelegramBot.Services
             {
                 throw new ArgumentException($"Список с таким названием уже существует");
             }
-
-            var toDoList = new ToDoList(user, name);
+            
+            var toDoList = new ToDoList() { Id = Guid.NewGuid(), User = user, Name = name, CreatedAt = DateTime.UtcNow };
             await _toDoListRepository.Add(toDoList, ct);
             return toDoList;
         }

@@ -65,7 +65,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             {
                 Id        = model.Id,
                 Name      = model.Name,
-                User      = model.User,
+                //User      = model.UserId,
                 CreatedAt = model.CreatedAt
             };
         }
@@ -75,7 +75,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             {
                 Id        = entity.Id,
                 Name      = entity.Name,
-                User      = entity.User,
+                UserId      = entity.User.UserId,
                 CreatedAt = entity.CreatedAt
             };
         }

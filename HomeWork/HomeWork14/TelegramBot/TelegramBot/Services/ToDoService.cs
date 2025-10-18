@@ -33,8 +33,7 @@ namespace TelegramBot.Services
             { 
                 throw new DuplicateTaskException(toDoItemName);
             }
-
-            var newToDoItem = new ToDoItem(user, toDoItemName, deadline, list);
+            var newToDoItem = new ToDoItem() { User = user, Name = toDoItemName, Deadline = deadline, List = list };
 
             await _toDoRepository.AddAsync(newToDoItem, ct);
             return newToDoItem;
