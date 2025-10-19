@@ -22,16 +22,9 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public async Task AddAsync(ToDoUser user, CancellationToken ct)
         {
-            /*if (await GetUserByTelegramUserIdAsync(user.TelegramUserId, ct) == null)
-            {
-                string fileName = Path.Combine(_directoryName, $"{user.UserId}.json");
-                using var createStream = File.Create(fileName);
-                await JsonSerializer.SerializeAsync(createStream, user, cancellationToken: ct);
-            }*/
-
             if (await GetUserByTelegramUserIdAsync(user.TelegramUserId, ct) == null) { 
                 using var dbContext = _dataContextFactory.CreateDataContext();
-                await dbContext.InsertAsync<ToDoUserModel>(ModelMapper.MapToModel(user));
+                await dbContext.InsertAsync<ToDoUserModel>(ModelMapper.MapToModel(user), token:ct);
             }
         }
 

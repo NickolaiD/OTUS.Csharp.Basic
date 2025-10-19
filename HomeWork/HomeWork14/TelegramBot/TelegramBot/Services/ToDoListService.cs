@@ -16,7 +16,7 @@ namespace TelegramBot.Services
         private IToDoListRepository _toDoListRepository;
         public ToDoListService() 
         {
-            _toDoListRepository = new SqlToDoRepository(new DataContextFactory());
+            _toDoListRepository = new SqlToDoListRepository(new DataContextFactory());
         }
         public async Task<ToDoList> Add(ToDoUser user, string name, CancellationToken ct)
         {
