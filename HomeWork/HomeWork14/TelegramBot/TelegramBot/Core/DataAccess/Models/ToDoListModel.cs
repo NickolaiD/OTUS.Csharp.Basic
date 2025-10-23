@@ -25,7 +25,7 @@ namespace TelegramBot.Core.DataAccess.Models
         [Column("created_at"), NotNull]
         public DateTime CreatedAt { get; set; }
 
-        [Association(ThisKey = nameof(Id), OtherKey = nameof(ToDoItemModel.List))]
+        [Association(ThisKey = nameof(Id), OtherKey = nameof(ToDoItemModel.ListId))]
         public List<ToDoItemModel> ToDoItems { get; set; } = [];
     }
 }

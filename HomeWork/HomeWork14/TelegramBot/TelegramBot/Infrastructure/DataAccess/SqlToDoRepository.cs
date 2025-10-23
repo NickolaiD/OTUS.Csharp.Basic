@@ -31,7 +31,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<int> CountActiveAsync(Guid userId, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId /*&& x.State == ToDoItemState.Active*/).Count());
+            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.UserId == userId && x.State == ToDoItemState.Active).Count());
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct)
@@ -43,7 +43,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<bool> ExistsByNameAsync(Guid userId, string name, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId && x.Name == name /*&& x.State == ToDoItemState.Active*/).Count() > 0);
+            return await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.UserId == userId && x.Name == name && x.State == ToDoItemState.Active).Count() > 0);
         }
        
         public async Task<ToDoItem?> GetAsync(Guid id, CancellationToken ct)
@@ -56,7 +56,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetActiveByUserIdAsync(Guid userId, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId && x.State == ToDoItemState.Active).ToList());
+            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.UserId == userId && x.State == ToDoItemState.Active).ToList());
 
             var resultList = new List<ToDoItem>();
 
@@ -71,7 +71,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId).ToList());
+            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.UserId == userId).ToList());
 
             var resultList = new List<ToDoItem>();
 
@@ -109,7 +109,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId && x.List.Id == listId).ToList());
+            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.UserId == userId && x.ListId == listId).ToList());
 
             var resultList = new List<ToDoItem>();
 

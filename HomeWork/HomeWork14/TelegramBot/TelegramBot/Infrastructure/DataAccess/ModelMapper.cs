@@ -36,27 +36,27 @@ namespace TelegramBot.Infrastructure.DataAccess
             return new ToDoItem()
             {
                 Id             = model.Id,
-                User           = model.User,
+                //User           = model.UserId,  **********************************
                 Name           = model.Name,
                 CreatedAt      = model.CreatedAt,
                 State          = model.State,
                 StateChangedAt = model.StateChangedAt,
                 Deadline       = model.Deadline,
-                List           = model.List
+                //List           = model.ListId  ***********************************
             };
         }
         public static ToDoItemModel MapToModel(ToDoItem entity)
         {
             return new ToDoItemModel()
             {
-                Id             = entity.Id,
-                User           = entity.User,
-                Name           = entity.Name,
-                CreatedAt      = entity.CreatedAt,
-                State          = entity.State,
+                Id = entity.Id,
+                UserId = entity.User.UserId,
+                Name = entity.Name,
+                CreatedAt = entity.CreatedAt,
+                State = entity.State,
                 StateChangedAt = entity.StateChangedAt,
-                Deadline       = entity.Deadline,
-                List           = entity.List
+                Deadline = entity.Deadline,
+                ListId = entity.List.Id
             };
         }
         public static ToDoList MapFromModel(ToDoListModel model)

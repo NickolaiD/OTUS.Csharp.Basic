@@ -8,31 +8,31 @@ using TelegramBot.Entities;
 
 namespace TelegramBot.Core.DataAccess.Models
 {
-    [Table("todo_list")]
+    [Table("todo_item")]
     internal class ToDoItemModel
     {
         [PrimaryKey, Column("id")]
         public Guid Id { get; set; }
 
         [Column("user_id"), NotNull]
-        public ToDoUser User { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("name"), NotNull]
         public string Name { get; set; }
 
         [Column("created_at"), NotNull]
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         [Column("state"), NotNull]
         public ToDoItemState State { get; set; }
 
         [Column("state_change_at")]
-        public DateTime? StateChangedAt { get; set; }
+        public DateTimeOffset? StateChangedAt { get; set; }
 
         [Column("deadline"), NotNull]
         public DateTime Deadline { get; set; }
 
         [Column("list_id")]
-        public ToDoList? List { get; set; }
+        public Guid ListId { get; set; }
     }
 }
