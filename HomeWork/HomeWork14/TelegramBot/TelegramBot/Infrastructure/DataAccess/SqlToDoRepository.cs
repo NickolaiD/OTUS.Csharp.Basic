@@ -85,9 +85,8 @@ namespace TelegramBot.Infrastructure.DataAccess
 
         public void Update(ToDoItem item)
         {
-            //item.State = ToDoItemState.Completed;
-            //item.StateChangedAt = DateTime.Now;
-            throw new NotImplementedException();
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            dbContext.GetTable<ToDoItemModel>().Where(x => x.Id == item.Id).Set(x => x.State, ToDoItemState.Completed).Set(x => x.StateChangedAt, DateTime.Now).Update();
         }
         public async Task<IReadOnlyList<ToDoItem>> FindAsync(Guid userId, Func<ToDoItem, bool> predicate, CancellationToken ct)
         {

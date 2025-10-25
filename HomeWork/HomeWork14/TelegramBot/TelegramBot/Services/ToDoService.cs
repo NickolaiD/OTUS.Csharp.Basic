@@ -1,4 +1,6 @@
-﻿using Telegram.Bot.Types;
+﻿using System.Collections.Generic;
+using System.Xml.Linq;
+using Telegram.Bot.Types;
 using TelegramBot.Core.DataAccess;
 using TelegramBot.Entities;
 using TelegramBot.Exceptions;
@@ -33,7 +35,16 @@ namespace TelegramBot.Services
             { 
                 throw new DuplicateTaskException(toDoItemName);
             }
-            var newToDoItem = new ToDoItem() { User = user, Name = toDoItemName, Deadline = deadline, List = list };
+            var newToDoItem = new ToDoItem() 
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                State = ToDoItemState.Active,
+                User = user,
+                Name = toDoItemName,
+                Deadline = deadline,
+                List = list
+            };
 
             await _toDoRepository.AddAsync(newToDoItem, ct);
             return newToDoItem;
@@ -59,7 +70,7 @@ namespace TelegramBot.Services
             var toDoItem = await _toDoRepository.GetAsync(id, ct);
             if (toDoItem != null)
             {
-                 _toDoRepository.Update(toDoItem);
+                 await Task.Run(() => _toDoRepository.Update(toDoItem));
             }
         }
         public async Task<IReadOnlyList<ToDoItem>> FindAsync(ToDoUser user, string namePrefix, CancellationToken ct)

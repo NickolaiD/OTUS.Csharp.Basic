@@ -56,7 +56,7 @@ namespace TelegramBot.Infrastructure.DataAccess
                 State = entity.State,
                 StateChangedAt = entity.StateChangedAt,
                 Deadline = entity.Deadline,
-                ListId = entity.List.Id
+                ListId = entity.List?.Id
             };
         }
         public static ToDoList MapFromModel(ToDoListModel model)

@@ -8,7 +8,7 @@
         public DateTimeOffset CreatedAt { get; set; }
         public ToDoItemState State { get; set; }
         public DateTimeOffset? StateChangedAt { get; set; }
-        public DateTime Deadline { get; set; }
+        public DateTimeOffset Deadline { get; set; }
         public ToDoList? List { get; set; }
     }
 }

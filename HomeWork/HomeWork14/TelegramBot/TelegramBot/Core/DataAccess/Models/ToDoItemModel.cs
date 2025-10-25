@@ -30,9 +30,9 @@ namespace TelegramBot.Core.DataAccess.Models
         public DateTimeOffset? StateChangedAt { get; set; }
 
         [Column("deadline"), NotNull]
-        public DateTime Deadline { get; set; }
+        public DateTimeOffset Deadline { get; set; }
 
         [Column("list_id")]
-        public Guid ListId { get; set; }
+        public Guid? ListId { get; set; }
     }
 }
