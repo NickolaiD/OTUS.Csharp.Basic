@@ -14,11 +14,5 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             return new ToDoDataContext(CONNECTION_STRING);
         }
-
-        //static void test()
-        //{
-        //    var t = new DataContextFactory();
-        //    t.CreateDataContext();
-        //}
     }
 }

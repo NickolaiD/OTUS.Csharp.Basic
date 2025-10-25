@@ -35,13 +35,13 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             var resultToDoItem = new ToDoItem()
             {
-                Id = model.Id,
-                User = new ToDoUser() { UserId = model.UserId },
-                Name = model.Name,
-                CreatedAt = model.CreatedAt,
-                State = model.State,
+                Id             = model.Id,
+                User           = new ToDoUser() { UserId = model.UserId },
+                Name           = model.Name,
+                CreatedAt      = model.CreatedAt,
+                State          = model.State,
                 StateChangedAt = model.StateChangedAt,
-                Deadline = model.Deadline,
+                Deadline       = model.Deadline,
             };
 
             if (model.ListId != null)
@@ -54,14 +54,14 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             return new ToDoItemModel()
             {
-                Id = entity.Id,
-                UserId = entity.User.UserId,
-                Name = entity.Name,
-                CreatedAt = entity.CreatedAt,
-                State = entity.State,
+                Id             = entity.Id,
+                UserId         = entity.User.UserId,
+                Name           = entity.Name,
+                CreatedAt      = entity.CreatedAt,
+                State          = entity.State,
                 StateChangedAt = entity.StateChangedAt,
-                Deadline = entity.Deadline,
-                ListId = entity.List?.Id
+                Deadline       = entity.Deadline,
+                ListId         = entity.List?.Id
             };
         }
         public static ToDoList MapFromModel(ToDoListModel model)
@@ -70,7 +70,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             {
                 Id        = model.Id,
                 Name      = model.Name,
-                //User      = model.UserId,
+                User      = new ToDoUser() { UserId = model.UserId },
                 CreatedAt = model.CreatedAt
             };
         }
@@ -80,7 +80,7 @@ namespace TelegramBot.Infrastructure.DataAccess
             {
                 Id        = entity.Id,
                 Name      = entity.Name,
-                UserId      = entity.User.UserId,
+                UserId    = entity.User.UserId,
                 CreatedAt = entity.CreatedAt
             };
         }
