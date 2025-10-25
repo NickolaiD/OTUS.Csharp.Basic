@@ -90,18 +90,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public async Task<IReadOnlyList<ToDoItem>> FindAsync(Guid userId, Func<ToDoItem, bool> predicate, CancellationToken ct)
         {
-            //// return await Task.Run(() => _toDoItemList.Where(x => x.User.UserId == userId).Where(predicate).ToList());
-            //using var dbContext = _dataContextFactory.CreateDataContext();
-            //var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.User.UserId == userId).Where(predicate).ToList());
-
-            //var resultList = new List<ToDoItem>();
-
-            //foreach (var item in toDoItemModel)
-            //{
-            //    resultList.Add(ModelMapper.MapFromModel(item));
-            //}
-
-            //return resultList;
+            //Использовалось в ранних версиях, сейчас метод не нужен
             throw new NotImplementedException();
         }
 

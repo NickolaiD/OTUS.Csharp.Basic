@@ -21,16 +21,16 @@ namespace TelegramBot.Core.DataAccess.Models
         public string Name { get; set; }
 
         [Column("created_at"), NotNull]
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         [Column("state"), NotNull]
         public ToDoItemState State { get; set; }
 
         [Column("state_change_at")]
-        public DateTimeOffset? StateChangedAt { get; set; }
+        public DateTime? StateChangedAt { get; set; }
 
         [Column("deadline"), NotNull]
-        public DateTimeOffset Deadline { get; set; }
+        public DateTime Deadline { get; set; }
 
         [Column("list_id")]
         public Guid? ListId { get; set; }

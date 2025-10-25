@@ -33,17 +33,22 @@ namespace TelegramBot.Infrastructure.DataAccess
         }
         public static ToDoItem MapFromModel(ToDoItemModel model)
         {
-            return new ToDoItem()
+            var resultToDoItem = new ToDoItem()
             {
-                Id             = model.Id,
-                //User           = model.UserId,  **********************************
-                Name           = model.Name,
-                CreatedAt      = model.CreatedAt,
-                State          = model.State,
+                Id = model.Id,
+                User = new ToDoUser() { UserId = model.UserId },
+                Name = model.Name,
+                CreatedAt = model.CreatedAt,
+                State = model.State,
                 StateChangedAt = model.StateChangedAt,
-                Deadline       = model.Deadline,
-                //List           = model.ListId  ***********************************
+                Deadline = model.Deadline,
             };
+
+            if (model.ListId != null)
+                resultToDoItem.List = new ToDoList() { Id = (Guid)model.ListId };
+
+            return resultToDoItem;
+
         }
         public static ToDoItemModel MapToModel(ToDoItem entity)
         {
