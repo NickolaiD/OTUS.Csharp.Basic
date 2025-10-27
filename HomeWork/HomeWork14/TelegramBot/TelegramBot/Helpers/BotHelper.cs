@@ -13,6 +13,7 @@ namespace TelegramBot.Helpers
     internal static class BotHelper
     {
         public static readonly string BASE_DIR = Path.Combine("D:", "TgBot");
+        public static readonly string CONNECTION_STRING = "Host=localhost;Port=5432;Database=ToDoList;Username=postgres;Password=admin;";
         public static ReplyKeyboardMarkup GetKeyboardButtons(bool userRegistered)
         {
             if (userRegistered)

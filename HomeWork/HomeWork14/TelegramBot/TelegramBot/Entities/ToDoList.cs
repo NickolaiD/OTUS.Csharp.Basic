@@ -2,16 +2,9 @@
 {
     public class ToDoList
     {
-        public Guid Id { get; init; }
-        public string Name { get; }
-        public ToDoUser User { get; }
-        public DateTime CreatedAt { get; init; }
-        public ToDoList(ToDoUser user, string name)
-        {
-            Id = Guid.NewGuid();
-            CreatedAt = DateTime.UtcNow;
-            User = user;
-            Name = name;
-        }
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public ToDoUser User { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

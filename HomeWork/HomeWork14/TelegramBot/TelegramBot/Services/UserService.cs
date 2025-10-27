@@ -1,4 +1,5 @@
-﻿using TelegramBot.Core.DataAccess;
+﻿using Telegram.Bot.Types;
+using TelegramBot.Core.DataAccess;
 using TelegramBot.Entities;
 using TelegramBot.Helpers;
 using TelegramBot.Infrastructure.DataAccess;
@@ -11,8 +12,7 @@ namespace TelegramBot.Services
 
         public UserService()
         {
-            //userRepository = new InMemoryUserRepository();
-            _userRepository = new FileUserRepository(BotHelper.BASE_DIR);
+            _userRepository = new SqlUserRepository(new DataContextFactory());
         }
         public async Task<ToDoUser?> GetUserAsync(long telegramUserId, CancellationToken ct)
         {
@@ -21,7 +21,14 @@ namespace TelegramBot.Services
 
         public async Task<ToDoUser> RegisterUserAsync(long telegramUserId, string telegramUserName, CancellationToken ct)
         {
-            var user = new ToDoUser(telegramUserName, telegramUserId);
+            var user = new ToDoUser() 
+            { 
+                UserId = Guid.NewGuid(), 
+                TelegramUserName = telegramUserName, 
+                TelegramUserId = telegramUserId,
+                RegisteredAt = DateTime.UtcNow
+            };
+
             await _userRepository.AddAsync(user, ct);
             return user;
         }
