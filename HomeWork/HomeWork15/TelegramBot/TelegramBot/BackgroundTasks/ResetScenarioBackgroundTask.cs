@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Helpers;
 using TelegramBot.Scenarios;
+using static LinqToDB.Reflection.Methods.LinqToDB;
 
 namespace TelegramBot.BackgroundTasks
 {
@@ -29,12 +31,8 @@ namespace TelegramBot.BackgroundTasks
             {
                 if ((DateTime.Now - scenarioContext.CreatedAt) > _resetScenarioTimeout)
                 {
+                    await _bot.SendMessage(scenarioContext.ChatId, $"Сценарий отменен, так как не поступил ответ в течение {_resetScenarioTimeout}", cancellationToken: ct, replyMarkup: BotHelper.GetKeyboardButtons(true));
                     await _scenarioRepository.ResetContext(scenarioContext.UserId, ct);
-                    //await _bot.SendMessage(update.Message.Chat.Id, $"Сценарий отменен, так как не поступил ответ в течение {_resetScenarioTimeout}"; , cancellationToken: ct/*, replyMarkup: replyKeyboardMarkup*/);
-
-                    Console.WriteLine($"!!!!!!!!!!!!!!!Сценарий отменен, так как не поступил ответ в течение {_resetScenarioTimeout}");
-
-
                 }
             }
         }

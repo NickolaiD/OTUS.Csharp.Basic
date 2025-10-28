@@ -47,6 +47,7 @@ namespace TelegramBot.Scenarios
 
                     context.CurrentStep = "Delete";
                     context.Data.Add("toDoItem", toDoItem);
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
 
                     replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
                     {
@@ -57,23 +58,26 @@ namespace TelegramBot.Scenarios
                         }
                     });
 
-                    await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, $"Подтверждаете удаление задачи { toDoItem.Name}?", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                    await bot.SendMessage(context.ChatId, $"Подтверждаете удаление задачи { toDoItem.Name}?", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     return ScenarioResult.Transition;
+
                 case "Delete":
                     callback = CallbackDto.FromString(update.CallbackQuery.Data);
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
                     if (callback.Action.Equals("yes"))
                     {
                         toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                         toDoItem = (ToDoItem?)context.Data.GetValueOrDefault("toDoItem");
                         await _toDoService.DeleteAsync(toDoItem.Id, ct);
 
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Задача удалена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        await bot.SendMessage(context.ChatId, "Задача удалена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }
                     else if (callback.Action.Equals("no"))
                     {
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Удаление отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        await bot.SendMessage(context.ChatId, "Удаление отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }
                         return ScenarioResult.Completed;
+
                 default:
                     throw new NotSupportedException($"Нет case для шага {context.CurrentStep}");
             }
