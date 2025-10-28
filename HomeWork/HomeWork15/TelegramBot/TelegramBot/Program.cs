@@ -4,6 +4,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.BackgroundTasks;
 using TelegramBot.Helpers;
 using TelegramBot.Infrastructure.DataAccess;
 using TelegramBot.Scenarios;
@@ -45,8 +46,14 @@ namespace TelegramBot
             scenarioList.Add(new DeleteListScenario(userService, toDoListService, toDoService));
             scenarioList.Add(new DeleteTaskScenario(userService, toDoService));
 
+            var scenarioRepository = new InMemoryScenarioContextRepository();
+
+            var taskRunner = new BackgroundTaskRunner();
+            taskRunner.AddTask(new ResetScenarioBackgroundTask(TimeSpan.FromHours(1), scenarioRepository, botClient));
+            taskRunner.StartTasks(cts.Token);
+
             var handler = new UpdateHandler(userService, botClient, toDoService,
-                                            new ToDoReportService(toDoRepository), scenarioList, new InMemoryScenarioContextRepository(), new ToDoListService());
+                                            new ToDoReportService(toDoRepository), scenarioList, scenarioRepository, new ToDoListService());
 
             try
             {
@@ -70,6 +77,7 @@ namespace TelegramBot
                 await Task.WhenAny(keyPressTask);
                 if (keyPressTask.IsCompleted)
                 {
+                    await taskRunner.StopTasks(cts.Token);
                     cts.Cancel();
                     Console.WriteLine("\nЗавершение работы бота...");
                 }
