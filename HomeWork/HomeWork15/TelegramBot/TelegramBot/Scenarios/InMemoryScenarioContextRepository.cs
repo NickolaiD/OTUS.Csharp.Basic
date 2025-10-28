@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace TelegramBot.Scenarios
 {
@@ -36,6 +37,11 @@ namespace TelegramBot.Scenarios
         public async Task SetContext(long userId, ScenarioContext context, CancellationToken ct)
         {
             await Task.Run(() => _scenarioContexts.GetOrAdd(userId, context));
+        }
+        public async Task<IReadOnlyList<ScenarioContext>> GetContexts(CancellationToken ct)
+        {
+            var result = await Task.Run(() => _scenarioContexts.Select(x => x.Value).ToList());
+            return result;
         }
     }
 }
