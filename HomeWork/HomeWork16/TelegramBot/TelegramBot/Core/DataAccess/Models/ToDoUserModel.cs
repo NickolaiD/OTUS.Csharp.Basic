@@ -25,7 +25,7 @@ namespace TelegramBot.Core.DataAccess.Models
             [Column("chat_id")]
             public long ChatId { get; set; }
 
-        [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoListModel.UserId))]
+            [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoListModel.UserId))]
             public List<ToDoListModel> ToDoLists { get; set; } = [];
 
             [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoItemModel.UserId))]

@@ -8,17 +8,6 @@ using System.Threading.Tasks;
 namespace TelegramBot.Core.DataAccess.Models
 {
     
-        /*
-                 Guid Id { get; }
-        ToDoUser User { get; }
-        
-        string Type { get; } //Тип нотификации. Например: DeadLine_{ToDoItem.Id}, Today_{DateOnly.FromDateTime(DateTime.UtcNow)}
-        string Text { get; }           //Текст, который будет отправлен
-        DateTime ScheduledAt { get; }  //Запланированная дата отправки
-        bool IsNotified { get; }       //Флаг отправки
-        DateTime? NotifiedAt { get; }  //Фактическая дата отправки
-         */
-
         [Table("notification")]
         internal class NotificationModel
     {
