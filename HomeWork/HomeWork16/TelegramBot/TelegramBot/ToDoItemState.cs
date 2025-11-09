@@ -1,5 +1,0 @@
-﻿enum ToDoItemState
-{
-    Active,
-    Completed
-}
