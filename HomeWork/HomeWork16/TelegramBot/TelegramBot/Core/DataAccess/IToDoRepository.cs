@@ -22,5 +22,6 @@ namespace TelegramBot.Core.DataAccess
         Task<int> CountActiveAsync(Guid userId, CancellationToken ct);
         Task<IReadOnlyList<ToDoItem>> FindAsync(Guid userId, Func<ToDoItem, bool> predicate, CancellationToken ct);
         Task<IReadOnlyList<ToDoItem>> GetByUserIdAndList(Guid userId, Guid? listId, CancellationToken ct);
+        Task<IReadOnlyList<ToDoItem>> GetActiveWithDeadline(Guid userId, DateTime from, DateTime to, CancellationToken ct);
     }
 }

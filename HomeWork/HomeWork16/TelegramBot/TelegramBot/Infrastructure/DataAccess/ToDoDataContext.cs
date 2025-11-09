@@ -15,6 +15,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public ITable<ToDoItemModel> ToDoItems => this.GetTable<ToDoItemModel>();
         public ITable<ToDoListModel> ToDoLists => this.GetTable<ToDoListModel>();
         public ITable<ToDoUserModel> ToDoUsers => this.GetTable<ToDoUserModel>();
+        public ITable<NotificationModel> Notifications => this.GetTable<NotificationModel>();
         public ToDoDataContext(string connectionString) : base(ProviderName.PostgreSQL, connectionString)
         { }
 

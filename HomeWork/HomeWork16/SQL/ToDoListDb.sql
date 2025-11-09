@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.todo_user
     tg_user_name character varying(32) COLLATE pg_catalog."default" NOT NULL,
     registered_at timestamp with time zone NOT NULL,
     tg_userid bigint,
+    chat_id bigint,
     CONSTRAINT todo_user_pkey PRIMARY KEY (id)
 )
 
@@ -96,6 +97,35 @@ CREATE INDEX IF NOT EXISTS idx_todo_item_list_id
 
 CREATE INDEX IF NOT EXISTS idx_todo_item_user_id
     ON public.todo_item USING btree
+    (user_id ASC NULLS LAST)
+    WITH (deduplicate_items=True)
+    TABLESPACE pg_default;
+	
+---Notification
+
+CREATE TABLE IF NOT EXISTS public.notification
+(
+    id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    type character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    text character varying(1000) COLLATE pg_catalog."default" NOT NULL,
+    scheduled_at timestamp without time zone,
+    is_notified boolean NOT NULL,
+    notified_at timestamp without time zone,
+    CONSTRAINT notification_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_notification_user FOREIGN KEY (user_id)
+        REFERENCES public.todo_user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.notification
+    OWNER to postgres;
+
+CREATE INDEX IF NOT EXISTS idx_notification_user_id
+    ON public.notification USING btree
     (user_id ASC NULLS LAST)
     WITH (deduplicate_items=True)
     TABLESPACE pg_default;

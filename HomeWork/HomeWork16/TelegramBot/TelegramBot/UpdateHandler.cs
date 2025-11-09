@@ -302,7 +302,7 @@ namespace TelegramBot
         {
             var _toDoUser = await _userService.GetUserAsync(botUpdate.Message.From.Id, ct);
             if (_toDoUser == null)
-                _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, ct);
+                _toDoUser = await _userService.RegisterUserAsync(botUpdate.Message.From.Id, botUpdate.Message.From.Username, botUpdate.Message.Chat.Id, ct);
 
             await _botClient.SendMessage(botUpdate.Message.Chat, $"Привет, {_toDoUser.TelegramUserName}! Чем могу помочь?", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
         }
