@@ -13,12 +13,15 @@ namespace TelegramBot.Scenarios
         public ScenarioType CurrentScenario { get; }
         public string? CurrentStep { get; set; }
         public Dictionary<string, object> Data { get; set; }
+        public DateTime CreatedAt { get; }
+        public long ChatId { get; set; }
 
         public ScenarioContext(ScenarioType scenario, long userId)
         {
             UserId = userId;
             CurrentScenario = scenario;
             Data = new Dictionary<string, object>();
+            CreatedAt = DateTime.UtcNow;
         }
     }
 }

@@ -42,13 +42,19 @@ namespace TelegramBot.Scenarios
                     toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.CurrentStep = "Name";
                     context.Data.Add("User", toDoUser);
-                    await bot.SendMessage(update.Message.Chat, "Введите название задачи:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                    context.ChatId = update.Message.Chat.Id;
+
+                    await bot.SendMessage(context.ChatId, "Введите название задачи:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     return ScenarioResult.Transition;
+
                 case "Name":
                     context.Data.Add(context.CurrentStep, update.Message.Text);  //Date -> Название задачи
                     context.CurrentStep = "Date";
-                    await bot.SendMessage(update.Message.Chat, "Введите срок выполнения:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                    context.ChatId = update.Message.Chat.Id;
+
+                    await bot.SendMessage(context.ChatId, "Введите срок выполнения:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     return ScenarioResult.Transition;
+
                 case "Date":
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                     toDoItemName = (string)context.Data.GetValueOrDefault("Name");
@@ -56,6 +62,7 @@ namespace TelegramBot.Scenarios
                     {
                         context.Data.Add(context.CurrentStep, toDoDate);
                         context.CurrentStep = "List";
+                        context.ChatId=update.Message.Chat.Id;
 
                         var toDoLists = await _toDoListService.GetUserLists(toDoUser.UserId, ct);
                         var listButtons = new List<InlineKeyboardButton>();
@@ -71,13 +78,14 @@ namespace TelegramBot.Scenarios
                         listButtons.ToArray()
                     });
 
-                        await bot.SendMessage(update.Message.Chat.Id, "Выберите список:", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                        await bot.SendMessage(context.ChatId, "Выберите список:", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     }
                     else
                     {
-                        await bot.SendMessage(update.Message.Chat, "Ошибка в дате. Введите срок выполнения еще раз:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
+                        await bot.SendMessage(context.ChatId, "Ошибка в дате. Введите срок выполнения еще раз:", cancellationToken: ct, replyMarkup: GetKeyboardCancel());
                     }
                     return ScenarioResult.Transition;
+
                 case "List":
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
                     toDoItemName = (string)context.Data.GetValueOrDefault("Name");
@@ -93,10 +101,11 @@ namespace TelegramBot.Scenarios
                         var toDoList = await _toDoListService.Get(callback.ToDoListId.GetValueOrDefault(), ct);
                         await _toDoService.AddAsync(toDoUser, toDoItemName, toDoDate, toDoList, ct);
                     }
-
-
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat, "Задача добавлена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                    
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
+                    await bot.SendMessage(context.ChatId, "Задача добавлена", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     return ScenarioResult.Completed;
+
                 default:
                     throw new NotSupportedException($"Нет case для шага {context.CurrentStep}");
             }

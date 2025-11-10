@@ -45,11 +45,13 @@ namespace TelegramBot.Scenarios
                     toDoUser = await _userService.GetUserAsync(context.UserId, ct);
                     context.CurrentStep = "Approve";
                     context.Data.Add("User", toDoUser);
-                    
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
+
+
                     var toDoLists = await _toDoListService.GetUserLists(toDoUser.UserId, ct);
                     if (toDoLists.Count == 0)
                     {
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Нет списков для удаления", cancellationToken: ct, replyMarkup: BotHelper.GetKeyboardButtons(true));
+                        await bot.SendMessage(context.ChatId, "Нет списков для удаления", cancellationToken: ct, replyMarkup: BotHelper.GetKeyboardButtons(true));
                         return ScenarioResult.Completed;
                     }
                     var listButtons = new List<InlineKeyboardButton>();
@@ -63,8 +65,9 @@ namespace TelegramBot.Scenarios
                         listButtons.ToArray()
                     });
 
-                    await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Выберите список:", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                    await bot.SendMessage(context.ChatId, "Выберите список:", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     return ScenarioResult.Transition;
+
                 case "Approve":
                     toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
 
@@ -73,6 +76,7 @@ namespace TelegramBot.Scenarios
 
                     context.CurrentStep = "Delete";
                     context.Data.Add("toDoList", toDoList);
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
 
                     replyKeyboardMarkup = new InlineKeyboardMarkup(new[]
                     {
@@ -83,10 +87,12 @@ namespace TelegramBot.Scenarios
                         }
                     });
 
-                    await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, $"Подтверждаете удаление списка { toDoList.Name} и всех его задач?", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
+                    await bot.SendMessage(context.ChatId, $"Подтверждаете удаление списка { toDoList.Name} и всех его задач?", cancellationToken: ct, replyMarkup: replyKeyboardMarkup);
                     return ScenarioResult.Transition;
+
                 case "Delete":
                     callback = CallbackDto.FromString(update.CallbackQuery.Data);
+                    context.ChatId = update.CallbackQuery.Message.Chat.Id;
                     if (callback.Action.Equals("yes"))
                     {
                         toDoUser = (ToDoUser?)context.Data.GetValueOrDefault("User");
@@ -99,13 +105,14 @@ namespace TelegramBot.Scenarios
                         }
 
                         await _toDoListService.Delete(toDoList.Id, ct);
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Список удален", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        await bot.SendMessage(context.ChatId, "Список удален", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }
                     else if (callback.Action.Equals("no"))
                     {
-                        await bot.SendMessage(update.CallbackQuery.Message.Chat.Id, "Удаление отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
+                        await bot.SendMessage(context.ChatId, "Удаление отменено", cancellationToken: ct, replyMarkup: GetKeyboardButtons(true));
                     }
                         return ScenarioResult.Completed;
+
                 default:
                     throw new NotSupportedException($"Нет case для шага {context.CurrentStep}");
             }
