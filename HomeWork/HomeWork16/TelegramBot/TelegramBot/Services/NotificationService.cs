@@ -25,7 +25,7 @@ namespace TelegramBot.Services
             using var dbContext = _dataContextFactory.CreateDataContext();
 
             var resultList = new List<Notification>();
-            var notificationList = await Task.Run(() => dbContext.GetTable<NotificationModel>().Where(x => x.IsNotified == false && x.ScheduledAt <= scheduledBefore).ToList());
+            var notificationList = await dbContext.GetTable<NotificationModel>().Where(x => x.IsNotified == false && x.ScheduledAt <= scheduledBefore).ToListAsync();
 
             foreach (var notification in notificationList)
             {

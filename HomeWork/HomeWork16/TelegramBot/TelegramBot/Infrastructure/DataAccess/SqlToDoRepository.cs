@@ -112,7 +112,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoItem>> GetActiveWithDeadline(Guid userId, DateTime from, DateTime to, CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            var toDoItemModel = await Task.Run(() => dbContext.GetTable<ToDoItemModel>().Where(x => x.State == ToDoItemState.Active && x.Deadline >= from && x.Deadline < to).ToList());
+            var toDoItemModel = await dbContext.GetTable<ToDoItemModel>().Where(x => x.State == ToDoItemState.Active && x.Deadline >= from && x.Deadline < to).ToListAsync();
 
             var resultList = new List<ToDoItem>();
             foreach (var item in toDoItemModel)

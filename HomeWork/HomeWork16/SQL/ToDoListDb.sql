@@ -129,6 +129,13 @@ CREATE INDEX IF NOT EXISTS idx_notification_user_id
     (user_id ASC NULLS LAST)
     WITH (deduplicate_items=True)
     TABLESPACE pg_default;
+	
+CREATE INDEX IF NOT EXISTS idx_notification_type
+    ON public.notification USING btree
+    (type COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (deduplicate_items=True)
+    TABLESPACE pg_default;
+
 
 
 	

@@ -48,7 +48,7 @@ namespace TelegramBot.Infrastructure.DataAccess
         public async Task<IReadOnlyList<ToDoUser>> GetUsers(CancellationToken ct)
         {
             using var dbContext = _dataContextFactory.CreateDataContext();
-            var toDoUserModelList = await Task.Run(() => dbContext.GetTable<ToDoUserModel>().ToList());
+            var toDoUserModelList = await dbContext.GetTable<ToDoUserModel>().ToListAsync();
 
             var resultList = new List<ToDoUser>();
             foreach (var userModel in toDoUserModelList)
