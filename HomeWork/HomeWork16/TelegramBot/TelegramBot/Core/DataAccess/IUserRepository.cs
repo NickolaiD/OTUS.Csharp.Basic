@@ -12,5 +12,6 @@ namespace TelegramBot.Core.DataAccess
         Task<ToDoUser?> GetUserAsync(Guid userId, CancellationToken ct);
         Task<ToDoUser?> GetUserByTelegramUserIdAsync(long telegramUserId, CancellationToken ct);
         Task AddAsync(ToDoUser user, CancellationToken ct);
+        Task<IReadOnlyList<ToDoUser>> GetUsers(CancellationToken ct);
     }
 }

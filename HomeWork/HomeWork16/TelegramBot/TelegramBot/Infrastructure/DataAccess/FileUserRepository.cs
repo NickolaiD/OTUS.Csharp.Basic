@@ -62,5 +62,11 @@ namespace TelegramBot.Infrastructure.DataAccess
             }
             return userList;
         }
+
+        public Task<IReadOnlyList<ToDoUser>> GetUsers(CancellationToken ct)
+        {
+            //класс использовался в более ранних ДЗ, сейчас метод не нужен.
+            throw new NotImplementedException();
+        }
     }
 }

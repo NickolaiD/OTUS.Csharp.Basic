@@ -22,12 +22,17 @@ namespace TelegramBot.Core.DataAccess.Models
             
             [Column("tg_userid"), NotNull]
             public long TelegramUserId { get; set; }
+            [Column("chat_id")]
+            public long ChatId { get; set; }
 
             [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoListModel.UserId))]
             public List<ToDoListModel> ToDoLists { get; set; } = [];
 
             [Association(ThisKey = nameof(UserId), OtherKey = nameof(ToDoItemModel.UserId))]
             public List<ToDoItemModel> ToDoItems { get; set; } = [];
+        
+            [Association(ThisKey = nameof(UserId), OtherKey = nameof(NotificationModel.UserId))]
+            public List<NotificationModel> Notifications { get; set; } = [];
 
     }
 }

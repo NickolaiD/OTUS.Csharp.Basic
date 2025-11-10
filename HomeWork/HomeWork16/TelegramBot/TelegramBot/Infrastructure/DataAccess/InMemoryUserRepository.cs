@@ -32,5 +32,11 @@ namespace TelegramBot.Infrastructure.DataAccess
         {
             return await Task.Run(() => _toDoUsers.Where(x => x.TelegramUserId == telegramUserId).FirstOrDefault(), ct);
         }
+
+        public Task<IReadOnlyList<ToDoUser>> GetUsers(CancellationToken ct)
+        {
+            //класс использовался в более ранних ДЗ, сейчас метод не нужен.
+            throw new NotImplementedException();
+        }
     }
 }

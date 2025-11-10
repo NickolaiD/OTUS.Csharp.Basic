@@ -18,7 +18,8 @@ namespace TelegramBot.Infrastructure.DataAccess
                 UserId           = model.UserId,
                 TelegramUserName = model.TelegramUserName,
                 RegisteredAt     = model.RegisteredAt,
-                TelegramUserId   = model.TelegramUserId
+                TelegramUserId   = model.TelegramUserId,
+                ChatId           = model.ChatId
             };
         }
         public static ToDoUserModel MapToModel(ToDoUser entity)
@@ -28,7 +29,8 @@ namespace TelegramBot.Infrastructure.DataAccess
                 UserId           = entity.UserId,
                 TelegramUserName = entity.TelegramUserName,
                 RegisteredAt     = entity.RegisteredAt,
-                TelegramUserId   = entity.TelegramUserId
+                TelegramUserId   = entity.TelegramUserId,
+                ChatId           = entity.ChatId
             };
         }
         public static ToDoItem MapFromModel(ToDoItemModel model)
@@ -82,6 +84,32 @@ namespace TelegramBot.Infrastructure.DataAccess
                 Name      = entity.Name,
                 UserId    = entity.User.UserId,
                 CreatedAt = entity.CreatedAt
+            };
+        }
+        public static Notification MapFromModel(NotificationModel model)
+        {
+            return new Notification()
+            {
+                Id          = model.Id,
+                User        = new ToDoUser() { UserId = model.UserId },
+                Type        = model.Type,
+                Text        = model.Text,
+                ScheduledAt = model.ScheduledAt,
+                IsNotified  = model.IsNotified,
+                NotifiedAt  = model.NotifiedAt
+        };
+        }
+        public static NotificationModel MapToModel(Notification entity)
+        {
+            return new NotificationModel()
+            {
+                Id          = entity.Id,
+                UserId      = entity.User.UserId,
+                Type        = entity.Type,
+                Text        = entity.Text,
+                ScheduledAt = entity.ScheduledAt,
+                IsNotified  = entity.IsNotified,
+                NotifiedAt  = entity.NotifiedAt
             };
         }
     }

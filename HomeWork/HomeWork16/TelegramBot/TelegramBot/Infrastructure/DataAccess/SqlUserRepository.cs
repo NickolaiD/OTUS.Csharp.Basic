@@ -44,5 +44,23 @@ namespace TelegramBot.Infrastructure.DataAccess
             var toDoUserModel = await dbContext.GetTable<ToDoUserModel>().Where(x => x.TelegramUserId == telegramUserId).FirstOrDefaultAsync();
             return toDoUserModel != null ? ModelMapper.MapFromModel(toDoUserModel) : null;
         }
+
+        public async Task<IReadOnlyList<ToDoUser>> GetUsers(CancellationToken ct)
+        {
+            using var dbContext = _dataContextFactory.CreateDataContext();
+            var toDoUserModelList = await dbContext.GetTable<ToDoUserModel>().ToListAsync();
+
+            var resultList = new List<ToDoUser>();
+            foreach (var userModel in toDoUserModelList)
+            {
+                resultList.Add(ModelMapper.MapFromModel(userModel));
+            }
+
+            return resultList;
+
+
+
+
+        }
     }
 }

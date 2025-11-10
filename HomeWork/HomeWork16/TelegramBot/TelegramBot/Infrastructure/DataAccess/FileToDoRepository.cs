@@ -202,5 +202,10 @@ namespace TelegramBot.Infrastructure.DataAccess
             }
         }
 
+        public Task<IReadOnlyList<ToDoItem>> GetActiveWithDeadline(Guid userId, DateTime from, DateTime to, CancellationToken ct)
+        {
+            //класс использовался в более ранних ДЗ, сейчас метод не нужен.            
+            throw new NotImplementedException();
+        }
     }
 }
